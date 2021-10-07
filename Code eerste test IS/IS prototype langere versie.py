@@ -5,30 +5,30 @@ import numpy as np
 import matplotlib.pyplot as plt
 import imageio
 import imutils
-cv2.ocl.setUseOpenCL(False)
 
-# select the image id (valid values 1,2,3, or 4)
-feature_extractor = 'orb' # one of 'sift', 'surf', 'brisk', 'orb'
-feature_matching = 'bf'
+# Zet op True om de tussenstappen te zien:
+progress = False
 
-# read images and transform them to grayscale
-# Make sure that the train image is the image that will be transformed
+# kies de mogelijke algoritmes
+feature_extractor = 'brisk'  # 4 mogelijke algoritmen om belangrijkste punten te bepalen:  'sift', 'brisk', 'orb' ('surf' gaat niet, is gepatenteerd
+feature_matching = 'KNN'  # 2 mogelijke algoritmen om belangrijkste punten te verbinden: 'bf', 'KNN'
+
+# lees de foto's in en zet ze in zwart-wit
+# de trainimg zal de foto zijn  die getransformeerd zal worden
 trainImg = imageio.imread('Campus 2.jpg')
 trainImg_gray = cv2.cvtColor(trainImg, cv2.COLOR_RGB2GRAY)
 
 queryImg = imageio.imread('Campus 1.jpg')
-# Opencv defines the color channel in the order BGR.
-# Transform it to RGB to be compatible to matplotlib
+# OpenCV gebruikt de kleurcode BGR, zet om naar RGB voor matplotlib
 queryImg_gray = cv2.cvtColor(queryImg, cv2.COLOR_RGB2GRAY)
+if progress:
+    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, constrained_layout=False, figsize=(16,9))
+    ax1.imshow(queryImg, cmap="gray")
+    ax1.set_xlabel("Query image", fontsize=14)
 
-fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, constrained_layout=False, figsize=(16,9))
-ax1.imshow(queryImg, cmap="gray")
-ax1.set_xlabel("Query image", fontsize=14)
-
-ax2.imshow(trainImg, cmap="gray")
-ax2.set_xlabel("Train image (Image to be transformed)", fontsize=14)
-
-plt.show()
+    ax2.imshow(trainImg, cmap="gray")
+    ax2.set_xlabel("Train image (Image to be transformed)", fontsize=14)
+    plt.show()
 
 
 def detectAndDescribe(image, method=None):
@@ -40,9 +40,9 @@ def detectAndDescribe(image, method=None):
 
     # detect and extract features from the image
     if method == 'sift':
-        descriptor = cv2.xfeatures2d.SIFT_create()
+        descriptor = cv2.SIFT_create()
     elif method == 'surf':
-        descriptor = cv2.xfeatures2d.SURF_create()
+        descriptor = cv2.xfeatures2d_SURF_create()
     elif method == 'brisk':
         descriptor = cv2.BRISK_create()
     elif method == 'orb':
@@ -56,14 +56,14 @@ def detectAndDescribe(image, method=None):
 kpsA, featuresA = detectAndDescribe(trainImg_gray, method=feature_extractor)
 kpsB, featuresB = detectAndDescribe(queryImg_gray, method=feature_extractor)
 
-# display the keypoints and features detected on both images
-fig, (ax1,ax2) = plt.subplots(nrows=1, ncols=2, figsize=(20,8), constrained_layout=False)
-ax1.imshow(cv2.drawKeypoints(trainImg_gray,kpsA,None,color=(0,255,0)))
-ax1.set_xlabel("(a)", fontsize=14)
-ax2.imshow(cv2.drawKeypoints(queryImg_gray,kpsB,None,color=(0,255,0)))
-ax2.set_xlabel("(b)", fontsize=14)
-
-plt.show()
+if progress:
+    # teken de belangrijkste punten
+    fig, (ax1,ax2) = plt.subplots(nrows=1, ncols=2, figsize=(20,8), constrained_layout=False)
+    ax1.imshow(cv2.drawKeypoints(trainImg_gray,kpsA,None,color=(0,255,0)))
+    ax1.set_xlabel("(a)", fontsize=14)
+    ax2.imshow(cv2.drawKeypoints(queryImg_gray,kpsB,None,color=(0,255,0)))
+    ax2.set_xlabel("(b)", fontsize=14)
+    plt.show()
 
 
 def createMatcher(method, crossCheck):
@@ -104,21 +104,24 @@ def matchKeyPointsKNN(featuresA, featuresB, ratio, method):
     return matches
 
 
-print("Using: {} feature matcher".format(feature_matching))
+print("Gebruikte feature matcher: {}".format(feature_matching))
 
-fig = plt.figure(figsize=(20, 8))
+if progress:
+    fig = plt.figure(figsize=(20, 8))
 
 if feature_matching == 'bf':
     matches = matchKeyPointsBF(featuresA, featuresB, method=feature_extractor)
     img3 = cv2.drawMatches(trainImg, kpsA, queryImg, kpsB, matches[:100],
                            None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
-elif feature_matching == 'knn':
+elif feature_matching == 'KNN':
     matches = matchKeyPointsKNN(featuresA, featuresB, ratio=0.75, method=feature_extractor)
     img3 = cv2.drawMatches(trainImg, kpsA, queryImg, kpsB, np.random.choice(matches, 100),
                            None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 
-plt.imshow(img3)
-plt.show()
+
+if progress:
+    plt.imshow(img3)
+    plt.show()
 
 
 def getHomography(kpsA, kpsB, featuresA, featuresB, matches, reprojThresh):
@@ -147,36 +150,30 @@ if M is None:
 (matches, H, status) = M
 print(H)
 
-# Apply panorama correction
+# corrigeer voor panorama effect
 width = trainImg.shape[1] + queryImg.shape[1]
 height = trainImg.shape[0] + queryImg.shape[0]
 
 result = cv2.warpPerspective(trainImg, H, (width, height))
 result[0:queryImg.shape[0], 0:queryImg.shape[1]] = queryImg
 
-plt.figure(figsize=(20,10))
-plt.imshow(result)
+if progress:
+    plt.figure(figsize=(20, 10))
+    plt.imshow(result)
+    plt.axis('off')
+    plt.show()
 
-plt.axis('off')
-plt.show()
-
-# transform the panorama image to grayscale and threshold it
+# verander de foto in greyscale
 gray = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
 thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)[1]
 
-# Finds contours from the binary image
+# vind de randen
 cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 cnts = imutils.grab_contours(cnts)
-
-# get the maximum contour area
 c = max(cnts, key=cv2.contourArea)
 
-# get a bbox from the contour area
 (x, y, w, h) = cv2.boundingRect(c)
-
-# crop the image to the bbox coordinates
 result = result[y:y + h, x:x + w]
-
-# show the cropped image
-plt.figure(figsize=(20,10))
+plt.figure(figsize=(20, 10))
 plt.imshow(result)
+plt.show()
