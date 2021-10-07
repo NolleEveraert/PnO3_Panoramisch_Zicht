@@ -15,10 +15,10 @@ feature_matching = 'KNN'  # 2 mogelijke algoritmen om belangrijkste punten te ve
 
 # lees de foto's in en zet ze in zwart-wit
 # de trainimg zal de foto zijn  die getransformeerd zal worden
-trainImg = imageio.imread('Campus 2.jpg')
+trainImg = imageio.imread('Boom 2.jpg')
 trainImg_gray = cv2.cvtColor(trainImg, cv2.COLOR_RGB2GRAY)
 
-queryImg = imageio.imread('Campus 1.jpg')
+queryImg = imageio.imread('Boom 1.jpg')
 # OpenCV gebruikt de kleurcode BGR, zet om naar RGB voor matplotlib
 queryImg_gray = cv2.cvtColor(queryImg, cv2.COLOR_RGB2GRAY)
 if progress:
