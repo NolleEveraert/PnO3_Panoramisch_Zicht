@@ -1,0 +1,12 @@
+Documentatie Raspberry Pi camera: https://www.raspberrypi.com/documentation/accessories/camera.html
+Paper over Image Stitching: https://www.hindawi.com/journals/mpe/2015/428076/
+Logica achter Image Stitching: https://towardsdatascience.com/computer-vision-intuition-behind-panorama-snitching-5c4be7205426
+Uitleg SIFT algorithme: https://aishack.in/tutorials/sift-scale-invariant-feature-transform-introduction/
+Wiskundige uitleg erachter: https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.130.6691&rep=rep1&type=pdf en https://www.sciencedirect.com/science/article/pii/S2096579619300063
+Raspberry project dat hetzelfde doen: https://medium.com/swlh/360-video-stitching-with-raspberry-pi-and-opencv-30549b37acbc
+Wikipedia: https://en.m.wikipedia.org/wiki/Image_stitching
+
+inleiding module picamera: https://projects.raspberrypi.org/en/projects/getting-started-with-picamera/7
+documentation picamera: https://picamera.readthedocs.io/en/release-1.13/
+Yt-kanaal over oa image stitching: https://www.youtube.com/channel/UCf0WB91t8Ky6AuYcQV0CcLw
+Image Stitching van meerdere camera's in Python met OpenCV: https://www.pyimagesearch.com/2018/12/17/image-stitching-with-opencv-and-python/
