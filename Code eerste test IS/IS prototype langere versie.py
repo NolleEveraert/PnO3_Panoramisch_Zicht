@@ -10,7 +10,7 @@ import imutils
 progress = False
 
 # kies de mogelijke algoritmes
-feature_extractor = 'brisk'  # 4 mogelijke algoritmen om belangrijkste punten te bepalen:  'sift', 'brisk', 'orb' ('surf' gaat niet, is gepatenteerd
+feature_extractor = 'orb'  # 4 mogelijke algoritmen om belangrijkste punten te bepalen:  'sift', 'brisk', 'orb' ('surf' gaat niet, is gepatenteerd
 feature_matching = 'KNN'  # 2 mogelijke algoritmen om belangrijkste punten te verbinden: 'bf', 'KNN'
 
 # lees de foto's in en zet ze in zwart-wit
@@ -24,10 +24,10 @@ queryImg_gray = cv2.cvtColor(queryImg, cv2.COLOR_RGB2GRAY)
 if progress:
     fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, constrained_layout=False, figsize=(16,9))
     ax1.imshow(queryImg, cmap="gray")
-    ax1.set_xlabel("Query image", fontsize=14)
+    ax1.set_xlabel("Basis foto", fontsize=14)
 
     ax2.imshow(trainImg, cmap="gray")
-    ax2.set_xlabel("Train image (Image to be transformed)", fontsize=14)
+    ax2.set_xlabel("Training Foto (foto die getransformeerd)", fontsize=14)
     plt.show()
 
 
