@@ -10,3 +10,4 @@ inleiding module picamera: https://projects.raspberrypi.org/en/projects/getting-
 documentation picamera: https://picamera.readthedocs.io/en/release-1.13/
 Yt-kanaal over oa image stitching: https://www.youtube.com/channel/UCf0WB91t8Ky6AuYcQV0CcLw
 Image Stitching van meerdere camera's in Python met OpenCV: https://www.pyimagesearch.com/2018/12/17/image-stitching-with-opencv-and-python/
+Image Stitching + Blending: http://web.stanford.edu/class/cs231m/spring-2014/docs/stitching-and-blending.pdf
