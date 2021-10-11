@@ -2,7 +2,7 @@
 
 import cv2
 
-schaal = 1.5
+schaal = 1.2
 
 fotos = []
 foto1 = cv2.imread("../IS met folders/alle fotos/fotos Thuis/Thuis 1.jpg")

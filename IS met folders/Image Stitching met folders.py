@@ -5,7 +5,7 @@ mainFolder = "alle fotos"  # folder waar python code in staat
 mijnFolders = os.listdir(mainFolder)  # alle folders met fotos
 print(mijnFolders)
 
-schaal = 0.3  # hoe hard wordt de foto veranderd
+schaal = 1  # hoe hard wordt de foto veranderd
 
 for folder in mijnFolders:
     pad = mainFolder + "/" + folder
