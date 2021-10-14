@@ -4,7 +4,6 @@ from picamera import PiCamera
 from time import sleep
 import numpy
 
-
 # mainFolder = "alle fotos"  # folder waar python code in staat
 # mijnFolders = os.listdir(mainFolder)  # alle folders met fotos
 # print(mijnFolders)
