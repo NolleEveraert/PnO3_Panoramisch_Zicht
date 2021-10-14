@@ -5,5 +5,5 @@ Nolle:
 Joppe: 
 Jonas:
 Thomas: 
-Simon: 
-Robin: 
+Simon: Opencv geïnstalleerd op de twee Raspberry Pies om de scripts te laten uitvoeren met de camera's. Vervolgens hebben we MPI kunnen laten werken met een ethernet verbindingen tussen de Pies.
+Robin: Opencv geïnstalleerd op de twee Raspberry Pies om de scripts te laten uitvoeren met de camera's. Vervolgens hebben we MPI kunnen laten werken met een ethernet verbindingen tussen de Pies.
