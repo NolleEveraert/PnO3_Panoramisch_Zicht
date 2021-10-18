@@ -3,7 +3,7 @@ Aanwezig: Nolle Everaert, Jonas De Schouuwer, Joppe De Boe, Simon Haepers, Robin
 
 Nolle: Voorbeeld algoritmes opgezocht en een kleine compilatie gemaakt van verschillende algoritmen
 Joppe: Meegewerkt  met Nolle aan de eerste stitching van 2 foto's tot een panoramabeeld, begonnen aan de beargumentatie en berekeningen om 3 camera's en pi's te gebruiken
-Jonas:
+Jonas: Geëxperimenteerd met Raspberry PIs, een overzicht gemaakt van 'what should be done'
 Thomas: 2e Raspberry Pi ingesteld (verbonden met laptop om te bedienen (command line + beeld), camera aangesloten en aangestuurd met python)
 Simon: Raspberry pi ingesteld, ssh verbinding, camera aansturen met python script (preview en interval_fotos), git geïnstalleerd op Raspberry pi, informatie MPI
 Robin: Raspberry pi ingesteld, ssh verbinding, camera aansturen met python script (preview en interval_fotos), git geïnstalleerd op Raspberry pi, informatie MPI
