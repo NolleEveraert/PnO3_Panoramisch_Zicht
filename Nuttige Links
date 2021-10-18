@@ -13,3 +13,4 @@ Image Stitching van meerdere camera's in Python met OpenCV: https://www.pyimages
 Image Stitching + Blending: http://web.stanford.edu/class/cs231m/spring-2014/docs/stitching-and-blending.pdf
 tutorial opencv: https://docs.opencv.org/master/d7/d16/tutorial_py_table_of_contents_core.html
 voorbeeld: https://levelup.gitconnected.com/faster-video-stitching-with-opengl-9e9132c72def
+Video Stream: https://github.com/pornpasok/opencv-stream-video-to-web
