@@ -3,39 +3,42 @@ from mpi4py import MPI
 from picamera import PiCamera
 from picamera.array import PiRGBAnalysis
 import cv2 as cv
-
-motion_dtype = np.dtype([
-    ('x', 'i1'),
-    ('y', 'i1'),
-    ('sad', 'u2')
-    ])
+import io
+from time import time
 
 
-class MyOutput(PiRGBAnalysis):
-    def __init__(self, camera, comm):
-        super(MyOutput, self).__init__(camera)
-        self.size = 0
+class MyOutput(object):
+    def __init__(self, comm):
+        #super(MyOutput, self).__init__(camera)
         self.comm = comm
+        self.stream = io.BytesIO()
         self.frame = 0
         
-    def analyze(self, s):
-        self.size += len(s)
-        
-        self.comm.send(s.flatten(), dest=0, tag=self.frame)
-        self.frame += 1
+    def write(self, data):
+        if data.startswith(b'\xff\xd8'):
+            size = self.stream.tell()
+            print(f'sender: {self.frame}')
+            if size > 0:
+                self.stream.seek(0)
+                self.comm.send(self.stream.read(size), dest=0, tag=self.frame)
+                self.frame += 1
+                self.stream.seek(0)
+        self.stream.write(data)
         
     def flush(self):
-        print(f'{self.size} bytes written')
-        #self.comm.send(np.empty(0), dest=0, tag=1)
+        #print(f'{self.size} bytes written')
+        self.comm.send(np.empty(0), dest=0, tag=self.frame)
 
 
 def record_video(comm):
-    with PiCamera() as camera:
-        camera.resolution = (640,480)
-        camera.framerate = 30
-        camera.start_recording(MyOutput(camera, comm), 'rgb')
-        camera.wait_recording(10)
+    with PiCamera(resolution='1280x720', framerate=10) as camera:
+        output = MyOutput(comm)
+        camera.start_recording(output, 'mjpeg')
+        camera.wait_recording(30)
+        #sleep(2)
         camera.stop_recording()
+        
+
 
 def main():
     comm = MPI.COMM_WORLD
@@ -43,19 +46,33 @@ def main():
     size = comm.Get_size()
     hostname = MPI.Get_processor_name()
     
+#sync voor foto nemen
+    if rank == 0:
+        comm.send(0, dest=1, tag=1000)
+    elif rank == 1:
+        comm.recv(source=0, tag=1000)
+    
     if rank == 1:
         record_video(comm)
     elif rank == 0:
-        i = 0
+        frame = 0
+        vorige = time()
         while True:
-            data = comm.recv(source=1, tag=i)
-            i += 1
-            print(data)
+            begin = time()
+            data = comm.recv(source=1, tag=frame)
+            print(f'receiver: {frame}')
+            fps = round(1.0 / (begin - vorige))
+            print(f'fps: {fps}')
+            frame += 1
             if len(data) == 0:
                 break
             else:
-                cv.imshow('cam', data.reshape((480,640)))
-                
+                print(f'receiver: {frame}')
+                inp = np.frombuffer(data, np.uint8)
+                image = cv.imdecode(inp, cv.IMREAD_COLOR)
+                #cv.imshow('cam', image)
+                #cv.waitKey(10)
+            vorige = begin
         
         cv.destroyAllWindows()
 
