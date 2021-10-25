@@ -17,7 +17,7 @@ for folder in mijnFolders:
         huidigeFoto = cv2.resize(huidigeFoto, (0, 0), None, schaal, schaal)
         fotos.append(huidigeFoto)
 
-    stitcher = cv2.Stitcher.create()
+    stitcher = cv2.createStitcher()
     status, result = stitcher.stitch(fotos)
     if status == cv2.STITCHER_OK:
         print("Panorama gemaakt")
