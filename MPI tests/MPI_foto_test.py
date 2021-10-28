@@ -10,8 +10,8 @@ from time import sleep
 
 print('test na MPI initialisatie')
 
-WIDTH = 1600
-HEIGHT = 800
+WIDTH = 2592
+HEIGHT = 1920
 
 
 def takephotos():
@@ -19,7 +19,7 @@ def takephotos():
         #sleep(1)
         output = numpy.empty((HEIGHT,WIDTH,3),dtype=numpy.uint8)
         camera.resolution = (WIDTH, HEIGHT)
-        camera.capture(output, 'rgb')
+        camera.capture(output, 'bgr')
     return output
             
 def stitch(fotos):
@@ -59,6 +59,8 @@ def main():
         foto2 = numpy.empty((HEIGHT,WIDTH,3),dtype=numpy.uint8)
         comm.Recv(foto2, source=1,tag=13)
         print('foto ontvangen')
+        cv2.imwrite(f'outputs/foto1.jpg', foto1)
+        cv2.imwrite(f'outputs/foto2.jpg', foto2)
         stitch([foto1, foto2])
     
 if __name__ == '__main__':
