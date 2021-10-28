@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import time
 
-img = cv2.imread(r'projections\fisheye-210.jpg')
+img = cv2.imread('projections/fisheye-210.jpg')
 APERTURE_RAD = 210 * np.pi/180
 IMG_HEIGHT, IMG_WIDTH = img.shape[:2]
 RADIUS = 1024
