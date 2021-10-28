@@ -55,16 +55,15 @@ def main():
     if rank == 1:
         record_video(comm)
     elif rank == 0:
-        #out = cv.VideoWriter('ouput.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (1920, 1080))
         frame = 0
-        begin = time()
-        vorige = begin
+        vorige = time()
         while True:
-            huidige = time()
+            begin = time()
             data = comm.recv(source=1, tag=frame)
             print(f'receiver: {frame}')
-            fps = round(1.0 / (huidige - vorige))
+            fps = round(1.0 / (begin - vorige))
             print(f'fps: {fps}')
+            
             if len(data) == 0:
                 break
             else:
@@ -76,6 +75,7 @@ def main():
                 #cv.imshow('cam', image)
                 #cv.waitKey(10)
             vorige = huidige
+
         
         totale_tijd = time() - begin
         gemiddeld_fps = frame / totale_tijd
