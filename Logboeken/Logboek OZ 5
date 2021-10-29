@@ -4,6 +4,6 @@ Aanwezig: Nolle Everaert, Jonas De Schouuwer, Joppe De Boe, Simon Haepers, Robin
 Nolle: Opzoek over streamingmogelijkheden Raspberry Pi en facebook, youtube en andere media
 Joppe: Beslissingsmatrix opgesteld, finaal ontwerp gekozen en mail opgesteld voor de fisheye camera's
 Jonas: Scherm naar YouTube gestreamd met pystreamlib
-Thomas: 
+Thomas: Opzoekwerk verricht voor streaming via Python, of andere programma's naar voornamelijk YouTube, en hoe dit werkt met 360 graden beelden. Stream helpen opzetten
 Simon: MPI gebruikt om met beide raspberrypi een foto te nemen en numpy arrays door te sturen
 Robin: MPI gebruikt om met beide raspberrypi een foto te nemen en numpy arrays door te sturen
