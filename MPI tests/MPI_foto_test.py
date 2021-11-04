@@ -16,7 +16,7 @@ HEIGHT = 1920
 
 def takephotos():
     with PiCamera() as camera:
-        #sleep(1)
+        sleep(1)
         output = numpy.empty((HEIGHT,WIDTH,3),dtype=numpy.uint8)
         camera.resolution = (WIDTH, HEIGHT)
         camera.capture(output, 'bgr')
