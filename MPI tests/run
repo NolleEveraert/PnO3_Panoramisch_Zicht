@@ -1,0 +1,4 @@
+#!/bin/sh
+
+scp MPI_video_beide.py pi@192.168.1.23:"/home/pi/Documents/PnO3_Panoramisch_Zicht/MPI\ tests"
+mpiexec -n 3 --hostfile hostfile.txt python3 /home/pi/Documents/PnO3_Panoramisch_Zicht/MPI\ tests/MPI_video_beide.py
