@@ -6,7 +6,7 @@ from time import time
 
 from stream import Receiver, StreamRecorder, StreamSender
 
-RESOLUTION = (1640,1232)
+RESOLUTION = (1296,976)
 FRAMERATE = 15
 
 
@@ -17,21 +17,27 @@ def main():
     hostname = MPI.Get_processor_name()
 
     with PiCamera(resolution=RESOLUTION, framerate=FRAMERATE) as camera:
+        print('start')
         if rank == 1:
             camera.start_recording(StreamSender(comm), 'mjpeg')
             camera.wait_recording(10)
+            camera.stop_recording()
+            
         elif rank == 0:
-            recorder = StreamRecorder(camera)
-            camera.start_recording(recorder, 'mjpeg')
+            #recorder = StreamRecorder(camera)
+            #camera.start_recording(recorder, 'mjpeg')
             recv = Receiver(comm)
-            data = None
             own_image = np.empty((RESOLUTION[1], RESOLUTION[0], 3), dtype=np.uint8)
-            while data != 'STOP':
-                other_image = recv.read()
+            while True:
+                data = recv.read()
+                if data is None:
+                    break
                 print(f'received frame {recv.frame}')
-                camera.capture(own_image)
+                camera.capture(own_image, 'rgb', use_video_port=True)
                 print('captured image')
 
-        camera.stop_recording()
+            print('stop')
 
 
+if __name__ == '__main__':
+    main()

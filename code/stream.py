@@ -47,7 +47,7 @@ class Receiver:
     def read(self):
         data = self.comm.recv(source=1, tag=self.frame) # Als de streamer rank 1 heeft
         if len(data) == 0:
-            return 'STOP'
+            return
         else:
             print(f'receiver: {self.frame}')
             self.frame += 1

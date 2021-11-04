@@ -1,0 +1,4 @@
+#!/bin/sh
+
+scp /home/pi/Documents/PnO3_Panoramisch_Zicht/code/main.py pi@raspberrypi02:"/home/pi/Documents/PnO3_Panoramisch_Zicht/code/main.py"
+mpiexec -n 2 --host 192.168.1.23,192.168.1.24 python3 /home/pi/Documents/PnO3_Panoramisch_Zicht/code/main.py
