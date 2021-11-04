@@ -1,13 +1,10 @@
-from picamera import PiCamera
+from picamera.array import PiRGBAnalysis
 import numpy as np
 import cv2 as cv
 import io
 
-RESOLUTION = (1640,1232)
-FRAMERATE = 15
 
-
-class Streamer(object):
+class StreamSender(object):
     def __init__(self, comm):
         self.comm = comm
         self.stream = io.BytesIO()
@@ -15,6 +12,7 @@ class Streamer(object):
         
     def write(self, data):
         if data.startswith(b'\xff\xd8'):
+            # byte code voor een nieuwe frame => stuur inhoud van buffer door met MPI 
             size = self.stream.tell()
             print(f'sender: {self.frame}')
             if size > 0:
@@ -23,6 +21,22 @@ class Streamer(object):
                 self.frame += 1
                 self.stream.seek(0)
         self.stream.write(data)
+
+    def flush(self):
+        self.comm.send(np.empty(0), dest=0, tag=self.frame)
+
+
+class StreamRecorder(PiRGBAnalysis):
+    def __init__(self, camera):
+        super().__init__(camera)
+        self.frames = {}
+        self.frame_count = 0
+
+    def analyse(self, array):
+        self.frames[self.frame_count] = array
+
+    def get_frame(self, frame):
+        return self.frames.pop(frame)
 
 
 class Receiver:
@@ -41,10 +55,4 @@ class Receiver:
             image = cv.imdecode(inp, cv.IMREAD_COLOR)
 
             return image
-
-
-def record_video(output):
-    with PiCamera(resolution=RESOLUTION, framerate=FRAMERATE) as camera:
-        camera.start_recording(output, 'mjpeg')
-        camera.wait_recording(10)
-        camera.stop_recording()
+    
