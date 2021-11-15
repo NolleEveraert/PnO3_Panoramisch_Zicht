@@ -2,12 +2,12 @@ import numpy as np
 from mpi4py import MPI
 from picamera import PiCamera
 import cv2 as cv
-from time import time
+from time import time, sleep
 
 from stream import Receiver, StreamRecorder, StreamSender
 
-RESOLUTION = (1296,976)
-FRAMERATE = 15
+RESOLUTION = (1296,972)
+FRAMERATE = 12
 
 
 def main():
@@ -24,19 +24,20 @@ def main():
             camera.stop_recording()
             
         elif rank == 0:
-            #recorder = StreamRecorder(camera)
-            #camera.start_recording(recorder, 'mjpeg')
-            recv = Receiver(comm)
-            own_image = np.empty((RESOLUTION[1], RESOLUTION[0], 3), dtype=np.uint8)
-            while True:
-                data = recv.read()
-                if data is None:
-                    break
-                print(f'received frame {recv.frame}')
-                camera.capture(own_image, 'rgb', use_video_port=True)
-                print('captured image')
+            with StreamRecorder(camera, comm) as recorder:
+                camera.start_recording(recorder, 'mjpeg')
+                recv = Receiver(comm)
+                #own_image = np.empty((RESOLUTION[1], RESOLUTION[0], 3), dtype=np.uint8)
+                while True:
+                    data = recv.read()
+                    if data is None:
+                        camera.stop_recording()
+                        break
+                    print(f'received frame {recv.frame}')
+                    #camera.capture(own_image, 'rgb', use_video_port=True)
+                    print('captured image')
 
-            print('stop')
+                print('stop')
 
 
 if __name__ == '__main__':
