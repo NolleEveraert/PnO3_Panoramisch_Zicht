@@ -3,6 +3,10 @@ import numpy as np
 import cv2 as cv
 import io
 from time import sleep
+from threading import Thread
+
+RESOLUTION = (1296,976)
+FRAMERATE = 10
 
 
 class StreamSender(object):
@@ -24,7 +28,6 @@ class StreamSender(object):
                 self.frame += 1
                 self.stream.seek(0)
                 self.comm.Barrier()
-                #self.comm.send(0,dest=0,tag=0)
         self.stream.write(data)
         
     def send(self):
@@ -46,19 +49,19 @@ class StreamSender(object):
 class StreamRecorder(PiRGBAnalysis):
     def __init__(self, camera, comm):
         super().__init__(camera)
-        self.frames = {}
+        self.frames = []
         self.frame_count = 1
         self.comm = comm
 
     def analyze(self, array):
-        self.frames[self.frame_count] = array
+        self.frames.append(array)
         print(f'receiver: {self.frame_count} taken')
-        self.frame_count += 1
         self.comm.Barrier()
-        #self.comm.recv(source=1,tag=0)
+        self.frame_count += 1
+        
 
     def get_frame(self):
-        return self.frames.pop(self.frame_count)
+        return self.frames.pop(0)
 
 
 class Receiver:
@@ -73,9 +76,15 @@ class Receiver:
             return
         else:
             print(f'receiver: {self.frame}')
+            image = np.empty((RESOLUTION[1], RESOLUTION[0], 3))
+            t = Thread(target=decode, args=(data, image, self.frame))
+            t.start()
             self.frame += 1
-            inp = np.frombuffer(data, np.uint8)
-            image = cv.imdecode(inp, cv.IMREAD_COLOR)
-
             return image
+        
+        
+def decode(data, image, frame):
+    inp = np.frombuffer(data, np.uint8)
+    image = cv.imdecode(inp, cv.IMREAD_COLOR)
+    print(f'decoded: {frame}')
     

@@ -4,10 +4,7 @@ from picamera import PiCamera
 import cv2 as cv
 from time import time, sleep
 
-from stream import Receiver, StreamRecorder, StreamSender
-
-RESOLUTION = (1296,976)
-FRAMERATE = 9
+from stream import Receiver, StreamRecorder, StreamSender, RESOLUTION, FRAMERATE
 
 
 def main():
@@ -32,16 +29,15 @@ def main():
                 camera.start_recording(recorder, 'rgb')
                 recv = Receiver(comm)
                 #own_image = np.empty((RESOLUTION[1], RESOLUTION[0], 3), dtype=np.uint8)
+                
                 while True:
                     data = recv.read()
-                    #own_image = recorder.get_frame()
+                    own_image = recorder.get_frame()
                     if data is None:
                         print('stop recording')
                         camera.stop_recording()
                         print('stopped recording')
                         break
-                    print(f'received frame {recv.frame}')
-                    #camera.capture(own_image, 'rgb', use_video_port=True)
 
         print('stop')
 
