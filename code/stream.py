@@ -20,6 +20,7 @@ class StreamSender(object):
                 self.comm.send(self.stream.read(size), dest=0, tag=self.frame)
                 self.frame += 1
                 self.stream.seek(0)
+                self.comm.Barrier()
         self.stream.write(data)
 
     def flush(self):
@@ -27,13 +28,15 @@ class StreamSender(object):
 
 
 class StreamRecorder(PiRGBAnalysis):
-    def __init__(self, camera):
+    def __init__(self, camera, comm):
         super().__init__(camera)
         self.frames = {}
         self.frame_count = 0
+        self.comm = comm
 
     def analyse(self, array):
         self.frames[self.frame_count] = array
+        self.comm.Barrier()
 
     def get_frame(self, frame):
         return self.frames.pop(frame)
