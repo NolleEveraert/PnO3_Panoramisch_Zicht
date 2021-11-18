@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import time
 
-img = cv2.imread('projections/fisheye-210.jpg')
+img = cv2.imread('Projections/fisheye-210.jpg')
 APERTURE_RAD = 210 * np.pi/180
 IMG_HEIGHT, IMG_WIDTH = img.shape[:2]
 RADIUS = 1024
@@ -51,7 +51,7 @@ def perform_transform(map_x, map_y):
     canvas = cv2.remap(img, map_x, map_y, interpolation=cv2.INTER_LINEAR)
 
     # doe gewenste output
-#    cv2.imwrite(r'projections\output.jpg', canvas)
+#    cv2.imwrite(r'Projections\output.jpg', canvas)
 
 
 
