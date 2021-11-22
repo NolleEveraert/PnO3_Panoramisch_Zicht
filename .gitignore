@@ -1,2 +1,4 @@
-*.jpg
+**.jpg
+**.png
+
 __pycache__
