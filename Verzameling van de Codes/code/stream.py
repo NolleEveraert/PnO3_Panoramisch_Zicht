@@ -5,8 +5,8 @@ import io
 from time import sleep
 from threading import Thread
 
-RESOLUTION = (1296,976)
-FRAMERATE = 10
+RESOLUTION =  (800,608)#(1296,976)
+FRAMERATE = 1
 
 
 class StreamSender(object):
@@ -40,7 +40,7 @@ class StreamSender(object):
 
     def flush(self):
         print('flush')
-        self.comm.send(np.empty(0), dest=0, tag=self.frame)
+        self.comm.send(b'10', dest=0, tag=self.frame)
         sleep(1)
         self.comm.Barrier()
         print('flushed')
@@ -61,7 +61,9 @@ class StreamRecorder(PiRGBAnalysis):
         
 
     def get_frame(self):
-        return self.frames.pop(0)
+        if len(self.frames) > 0:
+            return self.frames.pop(0)
+        return None
 
 
 class Receiver:
@@ -71,14 +73,15 @@ class Receiver:
 
     def read(self):
         data = self.comm.recv(source=1, tag=self.frame) # Als de streamer rank 1 heeft
-        if len(data) == 0:
+        if data == b'10':
             print('stop code ontvangen')
             return
         else:
-            print(f'receiver: {self.frame}')
+            print(f'receiver: {self.frame} received')
             image = np.empty((RESOLUTION[1], RESOLUTION[0], 3))
             t = Thread(target=decode, args=(data, image, self.frame))
             t.start()
+            t.join()
             self.frame += 1
             return image
         
