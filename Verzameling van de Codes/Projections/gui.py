@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 
-from projection_by_matrix import *
+from projection import *
 
 IMG_LEFT_DICT = GANGLEFT_DICT
 IMG_RIGHT_DICT = GANGRIGHT_DICT
@@ -25,7 +25,7 @@ def render(event):
     merged_rgb = cv2.cvtColor(merge(result_left, result_right).astype(np.uint8), cv2.COLOR_BGR2RGB)
     merged1 = Image.fromarray(merged_rgb)
     merged = ImageTk.PhotoImage(merged1)
-    
+
     canvas.itemconfig(image_sprite, image=merged)
 
 
