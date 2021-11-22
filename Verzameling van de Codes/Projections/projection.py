@@ -129,7 +129,13 @@ def getMargins(img):
 def norm_correlation(a, b):
     # the higher, the better
     assert a.shape == b.shape
-    return np.sum(a*b) / (np.sqrt(np.sum(a*a)) * np.sqrt(np.sum(b*b)))
+    if not a.dtype == b.dtype == np.uint8:
+        print("WARNING: one array does not have type np.uint8")
+    
+    c = a.astype(np.uint64)
+    d = b.astype(np.uint64)
+    return np.sum(c*d) / (np.sqrt(np.sum(c*c)) * np.sqrt(np.sum(d*d)))
+
 
 def compare(img_dict1, img_dict2, ap1, ap2) -> int:
     ap1_rad = ap1 * np.pi/180
