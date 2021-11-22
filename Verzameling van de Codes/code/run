@@ -1,5 +1,5 @@
 #!/bin/sh
 
-scp /home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/main.py pi@raspberrypi01:"/home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/main.py"
-scp /home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/stream.py pi@raspberrypi01:"/home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/stream.py"
-mpiexec -n 2 --host 192.168.1.24,192.168.1.23 python3 /home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/main.py
+scp /home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/main.py pi@raspberrypi02:"/home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/main.py"
+scp /home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/stream.py pi@raspberrypi02:"/home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/stream.py"
+mpiexec -n 2 --host 192.168.1.23,192.168.1.24 python3 /home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/main.py

@@ -7,6 +7,8 @@ from projection import *
 IMG_LEFT_DICT = GANGLEFT_DICT
 IMG_RIGHT_DICT = GANGRIGHT_DICT
 
+HEIGHT, WIDTH = int(CANVAS_HEIGHT/2), int(CANVAS_WIDTH/2)
+
 
 def render(event):
     global merged
@@ -22,9 +24,9 @@ def render(event):
     
     result_left = perform_transform(IMG_LEFT_DICT['image'], mapx_left, mapy_left)
     result_right = perform_transform(IMG_RIGHT_DICT['image'], mapx_right, mapy_right)
-    merged_rgb = cv2.cvtColor(merge(result_left, result_right).astype(np.uint8), cv2.COLOR_BGR2RGB)
-    merged1 = Image.fromarray(merged_rgb)
-    merged = ImageTk.PhotoImage(merged1)
+    merged_1 = cv2.resize(merge(result_left, result_right), dsize=(WIDTH, HEIGHT))      # merge and resize
+    merged_2 = cv2.cvtColor(merged_1.astype(np.uint8), cv2.COLOR_BGR2RGB)               # convert to np.uint8 and to RGB
+    merged = ImageTk.PhotoImage(Image.fromarray(merged_2))                              # convert to PIL Image and subsequently to PhotoImage
 
     canvas.itemconfig(image_sprite, image=merged)
 
@@ -34,28 +36,28 @@ window = tk.Tk()
 
 aperture_left = tk.Scale(window, from_=180, to=210, command=render)
 aperture_left.set(0)
-aperture_left.pack()
+aperture_left.pack(side=tk.LEFT)
 ar_left = tk.Scale(window, from_=-10, to=10, command=render)
 ar_left.set(0)
-ar_left.pack()
+ar_left.pack(side=tk.LEFT)
 au_left = tk.Scale(window, from_=-10, to=10, command=render)
 au_left.set(0)
-au_left.pack()
+au_left.pack(side=tk.LEFT)
 
-canvas = tk.Canvas(window, width=CANVAS_WIDTH+5, height=CANVAS_HEIGHT+5)
-merged = ImageTk.PhotoImage(Image.fromarray(np.full((CANVAS_HEIGHT, CANVAS_WIDTH, 3), 100, dtype=np.uint8)))
+canvas = tk.Canvas(window, width=WIDTH, height=HEIGHT)
+merged = ImageTk.PhotoImage(Image.fromarray(np.full((HEIGHT, WIDTH, 3), 100, dtype=np.uint8)))
 image_sprite = canvas.create_image(0,0, image=merged, anchor="nw")
-canvas.pack()
+canvas.pack(side=tk.LEFT)
 
 aperture_right = tk.Scale(window, from_=180, to=210, command=render)
 aperture_right.set(200)
-aperture_right.pack()
+aperture_right.pack(side=tk.LEFT)
 ar_right = tk.Scale(window, from_=-10, to=10, command=render)
 ar_right.set(0)
-ar_right.pack()
+ar_right.pack(side=tk.LEFT)
 au_right = tk.Scale(window, from_=-10, to=10, command=render)
 au_right.set(0)
-au_right.pack()
+au_right.pack(side=tk.LEFT)
 
 
 
