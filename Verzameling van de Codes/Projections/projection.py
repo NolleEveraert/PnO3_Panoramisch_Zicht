@@ -199,7 +199,7 @@ def merge(left, right):
         margin0_interpolated,
     ))
     #return np.roll(result, shift=int(margin_width/2), axis=1)
-    return np.roll(result, shift=-int(margin_width/2), axis=1)
+    return result       # rollen neemt veel tijd en is niet nodig
     
 
 
