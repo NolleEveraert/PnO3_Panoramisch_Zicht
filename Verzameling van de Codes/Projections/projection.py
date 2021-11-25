@@ -202,7 +202,6 @@ def merge(left, right):
     return result       # rollen neemt veel tijd en is niet nodig
     
 
-
 def main():
     for aperture in range(180, 202, 2):
         aperture_rad = aperture * np.pi/180
