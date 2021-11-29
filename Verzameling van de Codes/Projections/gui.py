@@ -24,9 +24,10 @@ def render(event):
     
     result_left = perform_transform(IMG_LEFT_DICT['image'], mapx_left, mapy_left)
     result_right = perform_transform(IMG_RIGHT_DICT['image'], mapx_right, mapy_right)
-    merged_1 = cv2.resize(merge(result_left, result_right), dsize=(WIDTH, HEIGHT))      # merge and resize
-    merged_2 = cv2.cvtColor(merged_1.astype(np.uint8), cv2.COLOR_BGR2RGB)               # convert to np.uint8 and to RGB
-    merged = ImageTk.PhotoImage(Image.fromarray(merged_2))                              # convert to PIL Image and subsequently to PhotoImage
+    merged_1 = np.roll(merge(result_left, result_right), shift=-int(MARGIN*CANVAS_WIDTH), axis=1)      # merge and roll
+    merged_2 = cv2.resize(merged_1, dsize=(WIDTH, HEIGHT))                              # resize
+    merged_3 = cv2.cvtColor(merged_2.astype(np.uint8), cv2.COLOR_BGR2RGB)               # convert to np.uint8 and to RGB
+    merged = ImageTk.PhotoImage(Image.fromarray(merged_3))                              # convert to PIL Image and subsequently to PhotoImage
 
     canvas.itemconfig(image_sprite, image=merged)
 
