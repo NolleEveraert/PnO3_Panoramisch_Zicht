@@ -20,6 +20,8 @@ inleiding module picamera: https://projects.raspberrypi.org/en/projects/getting-
 documentation picamera: https://picamera.readthedocs.io/en/release-1.13/
 tutorial opencv: https://docs.opencv.org/master/d7/d16/tutorial_py_table_of_contents_core.html
 voorbeeld: https://levelup.gitconnected.com/faster-video-stitching-with-opengl-9e9132c72def
+https://nyu-cds.github.io/python-mpi/03-nonblocking/
+https://gvasu.medium.com/faster-real-time-video-processing-using-multi-threading-in-python-8902589e1055
 
 
   --- Streamen ---
