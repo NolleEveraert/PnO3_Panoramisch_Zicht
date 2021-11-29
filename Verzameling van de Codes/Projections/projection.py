@@ -15,7 +15,7 @@ import time
 #     'output_path': r'Verzameling van de Codes\Projections\fisheye-output.jpg',
 # }
 
-img = cv2.imread(r'Verzameling van de Codes\Projections\comp-left.jpg')
+img = cv2.imread(r'comp-left.jpg')
 COMPLEFT_DICT = {
     'name': "comp-left",
     'image': img,
@@ -25,10 +25,10 @@ COMPLEFT_DICT = {
     'radius': 1070,       # mistakes in radius do not matter, as long as radius/aperture is right
     'center_x': 1150,
     'center_y': 970,
-    'output_path': r'Verzameling van de Codes\Projections\comp-left-output.jpg',
+    'output_path': r'comp-left-output.jpg',
 }
 
-img = cv2.imread(r'Verzameling van de Codes\Projections\comp-right.jpg')
+img = cv2.imread(r'comp-right.jpg')
 COMPRIGHT_DICT = {
     'name': "comp-right",
     'image': img,
@@ -38,10 +38,10 @@ COMPRIGHT_DICT = {
     'radius': 1070,     #1078
     'center_x': 1256,
     'center_y': 970,
-    'output_path': r'Verzameling van de Codes\Projections\comp-right-output.jpg',
+    'output_path': r'comp-right-output.jpg',
 }
 
-img = cv2.imread(r'Verzameling van de Codes\Projections\gang_left.jpg')
+img = cv2.imread(r'gang_left.jpg')
 GANGLEFT_DICT = {
     'name': "gang-left",
     'image': img,
@@ -53,10 +53,10 @@ GANGLEFT_DICT = {
     'center_y': 957,
     'a_up': 0,
     'a_right': 0,
-    'output_path': r'Verzameling van de Codes\Projections\gang-left-output.jpg',
+    'output_path': r'gang-left-output.jpg',
 }
 
-img = cv2.imread(r'Verzameling van de Codes\Projections\gang_right.jpg')
+img = cv2.imread(r'gang_right.jpg')
 GANGRIGHT_DICT = {
     'name': "gang-right",
     'image': img,
@@ -68,11 +68,11 @@ GANGRIGHT_DICT = {
     'center_y': 940,
     'a_up': 0,
     'a_right': 0,
-    'output_path': r'Verzameling van de Codes\Projections\gang-right-output.jpg',
+    'output_path': r'gang-right-output.jpg',
 }
 
-CANVAS_WIDTH = 1440
-CANVAS_HEIGHT = 1000
+CANVAS_WIDTH = 1000
+CANVAS_HEIGHT = 500
 MARGIN = 0.03       # het percentage van de breedte dat als marge wordt genomen
 #0.015
 

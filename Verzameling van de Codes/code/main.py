@@ -5,16 +5,21 @@ import cv2 as cv
 from time import time, sleep
 from threading import Thread
 
-from stream import Receiver, StreamRecorder, StreamSender, RESOLUTION, FRAMERATE, StreamSender2
+from stream import Receiver, StreamRecorder, FrameBuffer, send, transform, RESOLUTION, FRAMERATE, running
 
 def senderloop2(camera, comm):
-    with StreamSender2(camera, comm) as sender:
-        camera.start_recording(sender, 'rgb')
+    record_buffer = FrameBuffer()
+    transform_buffer = FrameBuffer()
+    with StreamRecorder(camera, record_buffer) as recorder:
+        camera.start_recording(recorder, 'rgb')
         begin = time()
-        while True:
-            sender.send()
-            if time() - begin > 10:
-                break
+        transform_thread = Thread(target=transform, args=(record_buffer, transform_buffer))
+        send_thread = Thread(target=send, args=(comm, transform_buffer))
+        
+        transform_thread.start()
+        send_thread.start()
+        sleep(10)
+        running = False
         end = time()
         print(f'time {end-begin}')
         camera.stop_recording()
@@ -60,6 +65,7 @@ def ShowImages(other_image, own_image):
     cv.waitKey(0)
 
 def main():
+    print('test')
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     #size = comm.Get_size()

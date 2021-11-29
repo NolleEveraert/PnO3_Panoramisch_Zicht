@@ -9,6 +9,7 @@ from projection import getTransformMatrices, perform_transform
 
 RESOLUTION =  (800,608)#(1296,976)
 FRAMERATE = 60
+running = True
 
 LEFT_DICT = {
     'aperture_rad': 198 * np.pi/180,
@@ -28,28 +29,73 @@ matrixLeftx, matrixLefty = getTransformMatrices(LEFT_DICT['aperture_rad'], LEFT_
 matrixRightx, matrixRighty = getTransformMatrices(RIGHT_DICT['aperture_rad'], RIGHT_DICT['center_x'], RIGHT_DICT['center_y'], RIGHT_DICT['radius'])
 
 
-class StreamSender2(PiRGBAnalysis):
-    def __init__(self, camera, comm):
-        super().__init__(camera)
+class FrameBuffer:
+    def __init__(self, size=10):
+        self.size = 10
         self.frames = []
+        
+    def push(self, frame, count):
+        print(f'added {count}')
+        self.frames.append((count, frame))
+        if len(self.frames) > self.size:
+            self.frames.pop(0)
+    
+    def get(self):
+        if len(self.frames) > 0:
+            return self.frames.pop(0)
+        else:
+            return None, None
+
+
+class StreamRecorder(PiRGBAnalysis):
+    def __init__(self, camera, buffer):
+        super().__init__(camera)
+        self.buffer = buffer
         self.frame_count = 1
-        self.frames_sent = 1
-        self.comm = comm
 
     def analyze(self, array):
-        self.frames.append(array)
+        print('analyze')
+        self.buffer.push(array, self.frame_count)
         print(f'sender: {self.frame_count} taken')
         self.comm.Barrier()
         self.frame_count += 1
         
-
-    def send(self):
-        if len(self.frames) > 0:
-            data = self.frames.pop(0)
-            data = perform_transform(data, matrixRightx, matrixRighty)
-            self.comm.send(data, dest=0, tag=self.frames_sent)
-            self.frames_sent +=1
-        return None
+        
+def send(comm, buffer):
+    while running:
+        count, frame = buffer.get()
+        if frame:
+            comm.send(frame, dest=0, tag=count)
+            print(f'sent {count}')
+        else:
+            sleep(0.01)
+        
+        
+def transform(inputBuffer, outputBuffer):
+    while running:
+        count, frame = inputBuffer.get()
+        if frame:
+            transformed = perform_transform(frame, matrixRightx, matrixRighty)
+            outputBuffer.push(transformed, count)
+            print(f'transformed {count}')
+        else:
+            sleep(0.01)
+        
+# class Sender:
+#     def __init__(self, comm, buffer):
+#         self.comm = comm
+#         self.buffer = buffer
+#         
+#     def send(self):
+#         count, frame = self.buffer.get()
+#         self.comm.send(frame, dest=0, tag=count)
+        
+#     def send(self):
+#         data = self.buffer.get()
+#         data = perform_transform(data, matrixRightx, matrixRighty)
+#         self.comm.send(data, dest=0, tag=self.frames_sent)
+#         self.frames_sent +=1
+#         return None
 
 class StreamSender(object):
     def __init__(self, comm):
@@ -130,6 +176,9 @@ class Receiver:
             self.frame += 1
             return data
         
+        
+        
+
         
 def decode(data, image, frame):
     inp = np.frombuffer(data, np.uint8)
