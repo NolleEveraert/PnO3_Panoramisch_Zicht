@@ -5,5 +5,5 @@ Nolle: Infobrochure maken + werken eindverslag
 Joppe:
 Jonas: Geprobeerd het mergen van afbeeldingen te optimaliseren (eventueel door meerdere cores van de PI te gebruiken), zonder veel succes.
 Thomas:
-Simon:
-Robin:
+Simon: Raspberry pi's proberen te maken nadat ze kapot waren gegaan. De 'sender'-kant van de software multithreaded gemaakt.
+Robin: Raspberry pi's proberen te maken nadat ze kapot waren gegaan. De 'sender'-kant van de software multithreaded gemaakt.
