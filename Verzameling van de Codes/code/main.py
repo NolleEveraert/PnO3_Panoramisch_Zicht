@@ -4,16 +4,18 @@ from picamera import PiCamera
 import cv2 as cv
 from time import time, sleep
 from threading import Thread
+import multiprocessing as mp
 
-from stream import Receiver, StreamRecorder, FrameBuffer, send, transform, RESOLUTION, FRAMERATE, running
+from stream import Recorder, FrameBuffer, send, transform, RESOLUTION, FRAMERATE, running, receive, mergeFrames
 
 def senderloop2(camera, comm):
     record_buffer = FrameBuffer()
     transform_buffer = FrameBuffer()
-    with StreamRecorder(camera, record_buffer) as recorder:
+    with Recorder(camera, record_buffer, comm) as recorder:
         camera.start_recording(recorder, 'rgb')
         begin = time()
         transform_thread = Thread(target=transform, args=(record_buffer, transform_buffer))
+#         transform_thread = mp.Process(target=transform, args=(record_buffer, transform_buffer))
         send_thread = Thread(target=send, args=(comm, transform_buffer))
         
         transform_thread.start()
@@ -39,30 +41,52 @@ def senderloop(camera, comm):
         
         
 def receiverloop(camera, comm):
-    with StreamRecorder(camera, comm) as recorder:
-        camera.start_recording(recorder, 'rgb')
-        recv = Receiver(comm)
+#     fourcc = cv.VideoWriter_fourcc(*'MJPG')
+#     out = cv.VideoWriter('output.avi', fourcc, 20.0, (RESOLUTION[0], RESOLUTION[1]), True)
+#     
+    record_buffer = FrameBuffer()
+    receive_buffer = FrameBuffer()
+    transform_buffer = FrameBuffer()
+    merge_buffer = FrameBuffer()
+    recorder = Recorder(camera, record_buffer, comm)
+    
+    camera.start_recording(recorder, 'rgb')
+    
+    receive_thread = Thread(target=receive, args=(comm, receive_buffer))
+    transform_thread = Thread(target=transform, args=(record_buffer, transform_buffer))
+    merge_thread = Thread(target=mergeFrames, args=(transform_buffer, receive_buffer, merge_buffer))
+#     receive_thread = mp.Process(target=receive, args=(comm, receive_buffer))
+#     receive_thread.daemon = True
+#     transform_thread.daemon = True
+#     merge_thread.daemon = True
+    receive_thread.start()
+    transform_thread.start()
+    merge_thread.start()
+    while running:
+        count, frame = merge_buffer.get()
+        if count != None:
+            cv.imwrite(f'frames/frame{count}.jpg', frame)
+        else:
+            sleep(0.1)
+    
+    
+#     receive_thread.join()
+#     i = 0
+#     while i < 1000:
+#         _, own = record_buffer.get()
+#         _, other = receive_buffer.get()
+# #         out.write(other)
+# #         ShowImages(other, own)
+#         sleep(0.01)
+#         i += 1
         
-        while True:
-            own_image = recorder.get_frame()
-            
-            if own_image is not None:
-                data = recv.read()
-                
-#                 t = Thread(target=ShowImages, args = (data,own_image))
-#                 t.start()
-#                 t.join()
-                if data is None:
-                    print('stop recording')
-                    camera.stop_recording()
-                    print('stopped recording')
-                    break
+
 
 
 def ShowImages(other_image, own_image):
     cv.imshow('andere', other_image)
     cv.imshow('eigen', own_image)
-    cv.waitKey(0)
+#     cv.waitKey(1)
 
 def main():
     print('test')
@@ -72,14 +96,14 @@ def main():
     hostname = MPI.Get_processor_name()
        
     with PiCamera(resolution=RESOLUTION, framerate=FRAMERATE) as camera:
-        print('start')
+        print(f'start {rank}')
         comm.Barrier()
         if rank == 1:
             senderloop2(camera, comm)
         elif rank == 0:
             receiverloop(camera, comm)
 
-        print('stop')
+        print(f'stop {rank}')
 
 
 if __name__ == '__main__':

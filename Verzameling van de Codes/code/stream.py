@@ -5,10 +5,10 @@ import io
 from time import sleep
 from threading import Thread
 
-from projection import getTransformMatrices, perform_transform
+from projection import getTransformMatrices, perform_transform, merge
 
 RESOLUTION =  (800,608)#(1296,976)
-FRAMERATE = 60
+FRAMERATE = 5
 running = True
 
 LEFT_DICT = {
@@ -34,8 +34,7 @@ class FrameBuffer:
         self.size = 10
         self.frames = []
         
-    def push(self, frame, count):
-        print(f'added {count}')
+    def push(self, count, frame):
         self.frames.append((count, frame))
         if len(self.frames) > self.size:
             self.frames.pop(0)
@@ -47,36 +46,44 @@ class FrameBuffer:
             return None, None
 
 
-class StreamRecorder(PiRGBAnalysis):
-    def __init__(self, camera, buffer):
+class Recorder(PiRGBAnalysis):
+    def __init__(self, camera, buffer, comm):
         super().__init__(camera)
         self.buffer = buffer
         self.frame_count = 1
+        self.comm = comm
 
     def analyze(self, array):
-        print('analyze')
-        self.buffer.push(array, self.frame_count)
+        self.buffer.push(self.frame_count, array)
         print(f'sender: {self.frame_count} taken')
         self.comm.Barrier()
         self.frame_count += 1
         
         
 def send(comm, buffer):
+    print('started sending')
+    frames_sent = 1
     while running:
         count, frame = buffer.get()
-        if frame:
-            comm.send(frame, dest=0, tag=count)
+        if count != None:
+            print(f'sending frame {frames_sent}')
+            comm.send(frame, dest=0, tag=frames_sent)
             print(f'sent {count}')
+            frames_sent += 1
         else:
             sleep(0.01)
+            
+    comm.send(np.empty(), dest=0, tag=frames_sent)
         
         
 def transform(inputBuffer, outputBuffer):
+    print('started transforming')
     while running:
         count, frame = inputBuffer.get()
-        if frame:
+        if count != None:
+            print(f'transforming frame {count}')
             transformed = perform_transform(frame, matrixRightx, matrixRighty)
-            outputBuffer.push(transformed, count)
+            outputBuffer.push(count, transformed)
             print(f'transformed {count}')
         else:
             sleep(0.01)
@@ -134,7 +141,7 @@ class StreamSender(object):
         print('flushed')
 
 
-class StreamRecorder(PiRGBAnalysis):
+class StreamRecorderRecv(PiRGBAnalysis):
     def __init__(self, camera, comm):
         super().__init__(camera)
         self.frames = []
@@ -156,25 +163,55 @@ class StreamRecorder(PiRGBAnalysis):
         return None
 
 
-class Receiver:
-    def __init__(self, comm):
-        self.comm = comm
-        self.frame = 1
-
-    def read(self):
-        #data = np.empty((RESOLUTION[1], RESOLUTION[0], 3))
-        data = self.comm.recv(source=1, tag=self.frame) # Als de streamer rank 1 heeft
-        if data == b'10':
+def receive(comm, buffer):
+    global running
+    print(running)
+    frames_received = 1
+    while running:
+        print('receiving')
+        data = comm.recv(source=1, tag=frames_received) # Als de streamer rank 1 heeft
+        if not data.any():
             print('stop code ontvangen')
-            return
+            running = False
+            break
         else:
-            print(f'receiver: {self.frame} received')
-            #image = np.empty((RESOLUTION[1], RESOLUTION[0], 3))
-#             t = Thread(target=decode, args=(data, image, self.frame))
-#             t.start()
-#             t.join()
-            self.frame += 1
-            return data
+            buffer.push(frames_received, data)
+            print(f'receiver: {frames_received} received')
+            frames_received += 1
+        
+
+def mergeFrames(buffer_in_1, buffer_in_2, buffer_out):
+    while running:
+        count1, frame1 = buffer_in_1.get()
+        if count1 != None:
+            count2 = None
+            while count2 == None and running:
+                count2, frame2 = buffer_in_2.get()
+                sleep(0.01)
+            frame_out = merge(frame1, frame2)
+            buffer_out.push(count1, frame_out)
+            print(f'MERGED {count1}')
+
+
+# class Receiver:
+#     def __init__(self, comm):
+#         self.comm = comm
+#         self.frame = 1
+# 
+#     def read(self):
+#         #data = np.empty((RESOLUTION[1], RESOLUTION[0], 3))
+#         data = self.comm.recv(source=1, tag=self.frame) # Als de streamer rank 1 heeft
+#         if data == b'stop':
+#             print('stop code ontvangen')
+#             return
+#         else:
+#             print(f'receiver: {self.frame} received')
+#             #image = np.empty((RESOLUTION[1], RESOLUTION[0], 3))
+# #             t = Thread(target=decode, args=(data, image, self.frame))
+# #             t.start()
+# #             t.join()
+#             self.frame += 1
+#             return data
         
         
         

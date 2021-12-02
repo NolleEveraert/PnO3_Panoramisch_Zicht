@@ -3,4 +3,4 @@
 scp /home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/main.py 192.168.1.24:"/home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/main.py"
 scp /home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/stream.py 192.168.1.24:"/home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/stream.py"
 scp /home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/projection.py 192.168.1.24:"/home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/projection.py"
-mpiexec -n 2 --host 192.168.1.23,192.168.1.24 python3 /home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/main.py
+mpiexec -n 2 --bind-to none --host 192.168.1.23,192.168.1.24 python3 /home/pi/Documents/PnO3_Panoramisch_Zicht/Verzameling\ van\ de\ Codes/code/main.py
