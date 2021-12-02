@@ -8,7 +8,7 @@ from threading import Thread
 from projection import getTransformMatrices, perform_transform, merge
 
 RESOLUTION =  (800,608)#(1296,976)
-FRAMERATE = 5
+FRAMERATE = 10
 running = True
 
 LEFT_DICT = {
@@ -67,13 +67,13 @@ def send(comm, buffer):
         count, frame = buffer.get()
         if count != None:
             print(f'sending frame {frames_sent}')
-            comm.send(frame, dest=0, tag=frames_sent)
+            comm.send((count, frame), dest=0, tag=frames_sent)
             print(f'sent {count}')
             frames_sent += 1
         else:
             sleep(0.01)
             
-    comm.send(np.empty(), dest=0, tag=frames_sent)
+    comm.send((0, np.empty()), dest=0, tag=frames_sent)
         
         
 def transform(inputBuffer, outputBuffer):
@@ -169,13 +169,13 @@ def receive(comm, buffer):
     frames_received = 1
     while running:
         print('receiving')
-        data = comm.recv(source=1, tag=frames_received) # Als de streamer rank 1 heeft
-        if not data.any():
+        count, frame = comm.recv(source=1, tag=frames_received) # Als de streamer rank 1 heeft
+        if count == 0:
             print('stop code ontvangen')
             running = False
             break
         else:
-            buffer.push(frames_received, data)
+            buffer.push(count, frame)
             print(f'receiver: {frames_received} received')
             frames_received += 1
         
@@ -183,14 +183,24 @@ def receive(comm, buffer):
 def mergeFrames(buffer_in_1, buffer_in_2, buffer_out):
     while running:
         count1, frame1 = buffer_in_1.get()
-        if count1 != None:
-            count2 = None
-            while count2 == None and running:
+        count2, frame2 = buffer_in_2.get()
+        while count1 == None:
+            count1, frame1 = buffer_in_1.get()
+        while count2 == None:
+            count2, frame2 = buffer_in_2.get()
+        while count1 != None and count2 != None:
+            if count2 > count1:
+                count1, frame1 = buffer_in_1.get()
+            elif count2 < count1:
                 count2, frame2 = buffer_in_2.get()
-                sleep(0.01)
-            frame_out = merge(frame1, frame2)
-            buffer_out.push(count1, frame_out)
-            print(f'MERGED {count1}')
+            else:
+                frame_out = merge(frame1, frame2)
+                buffer_out.push(count1, frame_out)
+                print(f'MERGED {count1}')
+                break
+        
+        
+            
 
 
 # class Receiver:

@@ -65,6 +65,9 @@ def receiverloop(camera, comm):
     while running:
         count, frame = merge_buffer.get()
         if count != None:
+#             cv.imshow('merged', frame)
+#             cv.waitKey(100)
+            sleep(0.1)
             cv.imwrite(f'frames/frame{count}.jpg', frame)
         else:
             sleep(0.1)
