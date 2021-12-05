@@ -40,10 +40,12 @@ class FrameBuffer:
             self.frames.pop(0)
     
     def get(self):
-        if len(self.frames) > 0:
-            return self.frames.pop(0)
-        else:
-            return None, None
+        while len(self.frames) == 0:
+            sleep(0.01)
+
+        return self.frames.pop(0)
+        # else:
+        #     return None, None
 
 
 class Recorder(PiRGBAnalysis):
@@ -184,20 +186,32 @@ def mergeFrames(buffer_in_1, buffer_in_2, buffer_out):
     while running:
         count1, frame1 = buffer_in_1.get()
         count2, frame2 = buffer_in_2.get()
-        while count1 == None:
-            count1, frame1 = buffer_in_1.get()
-        while count2 == None:
-            count2, frame2 = buffer_in_2.get()
-        while count1 != None and count2 != None:
-            if count2 > count1:
+
+        while count1 != count2:
+            if count1 < count2:
+                print(f'frame {count1} DROPPED')
                 count1, frame1 = buffer_in_1.get()
-            elif count2 < count1:
-                count2, frame2 = buffer_in_2.get()
             else:
-                frame_out = merge(frame1, frame2)
-                buffer_out.push(count1, frame_out)
-                print(f'MERGED {count1}')
-                break
+                print(f'frame {count2} DROPPED')
+                count2, frame2 = buffer_in_2.get()
+
+        buffer_out.push(merge(frame1, frame2))
+        print(f'MERGED {count1}')
+        
+    #     while count1 == None:
+    #         count1, frame1 = buffer_in_1.get()
+    #     while count2 == None:
+    #         count2, frame2 = buffer_in_2.get()
+    #     while count1 != None and count2 != None:
+    #         if count2 > count1:
+    #             count1, frame1 = buffer_in_1.get()
+    #         elif count2 < count1:
+    #             count2, frame2 = buffer_in_2.get()
+    #         else:
+    #             frame_out = merge(frame1, frame2)
+    #             buffer_out.push(count1, frame_out)
+    #             print(f'MERGED {count1}')
+    #             break
         
         
             
