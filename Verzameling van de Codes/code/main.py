@@ -4,11 +4,12 @@ from picamera import PiCamera
 import cv2 as cv
 from time import time, sleep
 from threading import Thread
-import multiprocessing as mp
+# import multiprocessing as mp
 
-from stream import Recorder, FrameBuffer, send, transform, RESOLUTION, FRAMERATE, running, receive, mergeFrames
+from stream import Recorder, FrameBuffer, send, transform, receive, mergeFrames, RESOLUTION, FRAMERATE, running
 
-def senderloop2(camera, comm):
+
+def senderloop(camera, comm):
     record_buffer = FrameBuffer()
     transform_buffer = FrameBuffer()
     with Recorder(camera, record_buffer, comm) as recorder:
@@ -26,18 +27,19 @@ def senderloop2(camera, comm):
         print(f'time {end-begin}')
         camera.stop_recording()
 
-def senderloop(camera, comm):
-    sender = StreamSender(comm)
-    camera.start_recording(sender, 'mjpeg')
-    begin = time()
-    while True:
-        sender.send()
-        sleep(0.01)
-        if time() - begin > 10:
-            break
-    end = time()
-    print(f'time {end-begin}')
-    camera.stop_recording()
+
+# def senderloop(camera, comm):
+#     sender = StreamSender(comm)
+#     camera.start_recording(sender, 'mjpeg')
+#     begin = time()
+#     while True:
+#         sender.send()
+#         sleep(0.01)
+#         if time() - begin > 10:
+#             break
+#     end = time()
+#     print(f'time {end-begin}')
+#     camera.stop_recording()
         
         
 def receiverloop(camera, comm):
@@ -84,12 +86,11 @@ def receiverloop(camera, comm):
 #         i += 1
         
 
-
-
 def ShowImages(other_image, own_image):
     cv.imshow('andere', other_image)
     cv.imshow('eigen', own_image)
-#     cv.waitKey(1)
+    cv.waitKey(1)
+
 
 def main():
     print('test')
@@ -102,7 +103,7 @@ def main():
         print(f'start {rank}')
         comm.Barrier()
         if rank == 1:
-            senderloop2(camera, comm)
+            senderloop(camera, comm)
         elif rank == 0:
             receiverloop(camera, comm)
 
