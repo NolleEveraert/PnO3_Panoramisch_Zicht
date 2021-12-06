@@ -54,10 +54,11 @@ class Recorder(PiRGBAnalysis):
         self.buffer = buffer
         self.frame_count = 1
         self.comm = comm
+        self.rank = comm.Get_rank()
 
     def analyze(self, array):
         self.buffer.push(self.frame_count, array)
-        print(f'sender: {self.frame_count} taken')
+        print(f'{self.rank}: {self.frame_count} taken')
         self.comm.Barrier()
         self.frame_count += 1
         
@@ -185,7 +186,9 @@ def receive(comm, buffer):
 def mergeFrames(buffer_in_1, buffer_in_2, buffer_out):
     while running:
         count1, frame1 = buffer_in_1.get()
+        print('GOT FRAME1')
         count2, frame2 = buffer_in_2.get()
+        print('GOT FRAME1')
 
         while count1 != count2:
             if count1 < count2:
