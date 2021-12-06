@@ -90,6 +90,43 @@ def transform(inputBuffer, outputBuffer):
             print(f'transformed {count}')
         else:
             sleep(0.01)
+
+
+def receive(comm, buffer):
+    global running
+    print(running)
+    frames_received = 1
+    while running:
+        print('receiving')
+        count, frame = comm.recv(source=1, tag=frames_received) # Als de streamer rank 1 heeft
+        if count == 0:
+            print('stop code ontvangen')
+            running = False
+            break
+        else:
+            buffer.push(count, frame)
+            print(f'receiver: {frames_received} received')
+            frames_received += 1
+        
+
+def mergeFrames(buffer_in_1, buffer_in_2, buffer_out):
+    while running:
+        count1, frame1 = buffer_in_1.get()
+        count2, frame2 = buffer_in_2.get()
+
+        while count1 != count2:
+            print(count1, count2)
+            if count1 < count2:
+                print(f'frame {count1} DROPPED')
+                count1, frame1 = buffer_in_1.get()
+            else:
+                print(f'frame {count2} DROPPED')
+                count2, frame2 = buffer_in_2.get()
+
+        merged = merge(frame1, frame2)
+        buffer_out.push(count1, merged)
+        print(f'MERGED {count1}')
+        
         
 # class Sender:
 #     def __init__(self, comm, buffer):
@@ -166,41 +203,7 @@ def transform(inputBuffer, outputBuffer):
 #         return None
 
 
-def receive(comm, buffer):
-    global running
-    print(running)
-    frames_received = 1
-    while running:
-        print('receiving')
-        count, frame = comm.recv(source=1, tag=frames_received) # Als de streamer rank 1 heeft
-        if count == 0:
-            print('stop code ontvangen')
-            running = False
-            break
-        else:
-            buffer.push(count, frame)
-            print(f'receiver: {frames_received} received')
-            frames_received += 1
-        
-
-def mergeFrames(buffer_in_1, buffer_in_2, buffer_out):
-    while running:
-        count1, frame1 = buffer_in_1.get()
-        print('GOT FRAME1')
-        count2, frame2 = buffer_in_2.get()
-        print('GOT FRAME1')
-
-        while count1 != count2:
-            if count1 < count2:
-                print(f'frame {count1} DROPPED')
-                count1, frame1 = buffer_in_1.get()
-            else:
-                print(f'frame {count2} DROPPED')
-                count2, frame2 = buffer_in_2.get()
-
-        buffer_out.push(merge(frame1, frame2))
-        print(f'MERGED {count1}')
-        
+# def mergeFrames():
     #     while count1 == None:
     #         count1, frame1 = buffer_in_1.get()
     #     while count2 == None:

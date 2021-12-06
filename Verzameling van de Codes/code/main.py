@@ -65,14 +65,14 @@ def receiverloop(camera, comm):
     transform_thread.start()
     merge_thread.start()
     while running:
+        print(f'transform buffer {len(transform_buffer.frames)}')
         count, frame = merge_buffer.get()
-        if count != None:
+        
 #             cv.imshow('merged', frame)
 #             cv.waitKey(100)
-            sleep(0.1)
-            cv.imwrite(f'frames/frame{count}.jpg', frame)
-        else:
-            sleep(0.1)
+        sleep(0.1)
+        cv.imwrite(f'frames/frame{count}.jpg', frame)
+    
     
     
 #     receive_thread.join()
