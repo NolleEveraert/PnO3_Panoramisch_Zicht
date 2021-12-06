@@ -7,8 +7,8 @@ from threading import Thread
 
 from projection import getTransformMatrices, perform_transform, merge
 
-RESOLUTION =  (800,608)#(1296,976)
-FRAMERATE = 10
+RESOLUTION =  (800, 608)#(1296,976)
+FRAMERATE = 5
 running = True
 
 LEFT_DICT = {
@@ -40,7 +40,7 @@ class FrameBuffer:
             self.frames.pop(0)
     
     def get(self):
-        while len(self.frames) == 0:
+        while len(self.frames) == 0 and running:
             sleep(0.01)
 
         return self.frames.pop(0)
@@ -127,7 +127,7 @@ def mergeFrames(buffer_in_1, buffer_in_2, buffer_out):
         buffer_out.push(count1, merged)
         print(f'MERGED {count1}')
         
-        
+
 # class Sender:
 #     def __init__(self, comm, buffer):
 #         self.comm = comm

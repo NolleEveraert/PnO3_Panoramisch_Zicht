@@ -10,10 +10,11 @@ from stream import Recorder, FrameBuffer, send, transform, receive, mergeFrames,
 
 
 def senderloop(camera, comm):
+    global running
     record_buffer = FrameBuffer()
     transform_buffer = FrameBuffer()
     with Recorder(camera, record_buffer, comm) as recorder:
-        camera.start_recording(recorder, 'rgb')
+        camera.start_recording(recorder, 'bgr')
         begin = time()
         transform_thread = Thread(target=transform, args=(record_buffer, transform_buffer))
 #         transform_thread = mp.Process(target=transform, args=(record_buffer, transform_buffer))
@@ -52,7 +53,7 @@ def receiverloop(camera, comm):
     merge_buffer = FrameBuffer()
     recorder = Recorder(camera, record_buffer, comm)
     
-    camera.start_recording(recorder, 'rgb')
+    camera.start_recording(recorder, 'bgr')
     
     receive_thread = Thread(target=receive, args=(comm, receive_buffer))
     transform_thread = Thread(target=transform, args=(record_buffer, transform_buffer))
@@ -65,7 +66,6 @@ def receiverloop(camera, comm):
     transform_thread.start()
     merge_thread.start()
     while running:
-        print(f'transform buffer {len(transform_buffer.frames)}')
         count, frame = merge_buffer.get()
         
 #             cv.imshow('merged', frame)
@@ -102,6 +102,7 @@ def main():
     with PiCamera(resolution=RESOLUTION, framerate=FRAMERATE) as camera:
         print(f'start {rank}')
         comm.Barrier()
+        print(f'{rank}: {time()}')
         if rank == 1:
             senderloop(camera, comm)
         elif rank == 0:
