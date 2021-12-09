@@ -2,31 +2,25 @@ from picamera.array import PiRGBAnalysis
 import numpy as np
 import cv2 as cv
 import io
-from time import sleep
+from time import sleep, time
 from threading import Thread
 
-from projection import getTransformMatrices, perform_transform, merge
+from projection import perform_transform, merge
 
 RESOLUTION =  (800, 608)#(1296,976)
 FRAMERATE = 5
 running = True
 
-LEFT_DICT = {
-    'aperture_rad': 198 * np.pi/180,
-    'radius': 1070/2592 * RESOLUTION[0],
-    'center_x': 1160/2592 * RESOLUTION[0],
-    'center_y': 957/1920 * RESOLUTION[1],
-}
 
-RIGHT_DICT = {
-    'aperture_rad': 198 * np.pi/180,
-    'radius': 1070/2592 * RESOLUTION[0],
-    'center_x': 1257/2592 * RESOLUTION[0],
-    'center_y': 940/1920 * RESOLUTION[1],
-}
+# def loop(f, *args, **kwargs):
+#     times = []
+#     while running:
+#         start = time()
+#         f(args, kwargs)
+#         times.append(time() - start)
 
-matrixLeftx, matrixLefty = getTransformMatrices(LEFT_DICT['aperture_rad'], LEFT_DICT['center_x'], LEFT_DICT['center_y'], LEFT_DICT['radius'])
-matrixRightx, matrixRighty = getTransformMatrices(RIGHT_DICT['aperture_rad'], RIGHT_DICT['center_x'], RIGHT_DICT['center_y'], RIGHT_DICT['radius'])
+#     return times
+
 
 
 class FrameBuffer:
@@ -40,7 +34,10 @@ class FrameBuffer:
             self.frames.pop(0)
     
     def get(self):
-        while len(self.frames) == 0 and running:
+        global running
+        while len(self.frames) == 0:
+            if not running:
+                return None, None
             sleep(0.01)
 
         return self.frames.pop(0)
@@ -59,45 +56,56 @@ class Recorder(PiRGBAnalysis):
     def analyze(self, array):
         self.buffer.push(self.frame_count, array)
         print(f'{self.rank}: {self.frame_count} taken')
+        # cv.imwrite(f'raw/{self.frame_count}.jpg', array)
         self.comm.Barrier()
         self.frame_count += 1
         
         
-def send(comm, buffer):
+def send(comm, buffer, times):
+    global running
     print('started sending')
     frames_sent = 1
     while running:
+        print('getting frame from buffer')
         count, frame = buffer.get()
+
+        start = time()
+        print(f'sending frame {frames_sent}')
         if count != None:
-            print(f'sending frame {frames_sent}')
             comm.send((count, frame), dest=0, tag=frames_sent)
             print(f'sent {count}')
             frames_sent += 1
-        else:
-            sleep(0.01)
-            
-    comm.send((0, np.empty()), dest=0, tag=frames_sent)
+        
+        times.append(time() - start)
+
+    comm.send((0, np.empty((1,1))), dest=0, tag=frames_sent)
         
         
-def transform(inputBuffer, outputBuffer):
+def transform(inputBuffer, outputBuffer, matrixX, matrixY, times):
     print('started transforming')
     while running:
         count, frame = inputBuffer.get()
+        
+        start = time()
         if count != None:
             print(f'transforming frame {count}')
-            transformed = perform_transform(frame, matrixRightx, matrixRighty)
+            transformed = perform_transform(frame, matrixX, matrixY)
             outputBuffer.push(count, transformed)
             print(f'transformed {count}')
         else:
             sleep(0.01)
+        times.append(time() - start)
+
+    return times
 
 
-def receive(comm, buffer):
+def receive(comm, buffer, times):
     global running
-    print(running)
+    
     frames_received = 1
     while running:
-        print('receiving')
+        start = time()
+        print(f'receiving: {frames_received}')
         count, frame = comm.recv(source=1, tag=frames_received) # Als de streamer rank 1 heeft
         if count == 0:
             print('stop code ontvangen')
@@ -107,13 +115,17 @@ def receive(comm, buffer):
             buffer.push(count, frame)
             print(f'receiver: {frames_received} received')
             frames_received += 1
+        times.append(time() - start)
+    
+    return times
         
 
-def mergeFrames(buffer_in_1, buffer_in_2, buffer_out):
+def mergeFrames(buffer_in_1, buffer_in_2, buffer_out, times):
     while running:
         count1, frame1 = buffer_in_1.get()
         count2, frame2 = buffer_in_2.get()
-
+        
+        start = time()
         while count1 != count2:
             print(count1, count2)
             if count1 < count2:
@@ -126,6 +138,14 @@ def mergeFrames(buffer_in_1, buffer_in_2, buffer_out):
         merged = merge(frame1, frame2)
         buffer_out.push(count1, merged)
         print(f'MERGED {count1}')
+        times.append(time() - start)
+
+    return times
+
+
+def stop():
+    global running
+    running = False
         
 
 # class Sender:
