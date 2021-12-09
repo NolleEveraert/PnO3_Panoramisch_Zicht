@@ -32,3 +32,4 @@ Video Stream: https://github.com/pornpasok/opencv-stream-video-to-web
 Equirectangular projection - uitleg+voorbeeld+presentatiestuff: http://paulbourke.net/dome/dualfish2sphere/
 Warping: https://medium.com/@kennethjiang/calibrate-fisheye-lens-using-opencv-333b05afa0b0
 Panorama viewer: https://renderstuff.com/tools/360-panorama-web-viewer/
+Panorama viewer API in Python: https://github.com/daerduoCarey/PanoramaImageViewer/blob/master/panorama_image_cropper.py
