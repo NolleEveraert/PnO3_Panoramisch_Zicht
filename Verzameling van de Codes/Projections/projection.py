@@ -24,8 +24,8 @@ COMPLEFT_DICT = {
     'name': "comp-left",
     'image': img,
     'aperture_rad': 200 * np.pi/180,
-    'img_height': img.shape[:2][0],
-    'img_width': img.shape[:2][1],
+    'img_height': img.shape[:2][0],     #2592
+    'img_width': img.shape[:2][1],      #1920
     'radius': 1070,       # mistakes in radius do not matter, as long as radius/aperture is right
     'center_x': 1150,
     'center_y': 970,
@@ -74,6 +74,36 @@ GANGRIGHT_DICT = {
     'a_right': 0,
     'output_path': os.path.join(img_dir, 'gang-right-output.jpg'),
 }
+
+img = cv2.imread(os.path.join(img_dir, '49_left.png'))
+LEFT49_DICT = {
+    'name': "left49",
+    'image': img,
+    'aperture_rad': 200 * np.pi/180,
+    'img_height': img.shape[:2][0],
+    'img_width': img.shape[:2][1],
+    'radius': 1070/2592 * img.shape[:2][1],     #330
+    'center_x': 1160/2592 * img.shape[:2][1],   #358
+    'center_y': 957/1920 * img.shape[:2][0],    #303
+    'a_up': 0,
+    'a_right': 0,
+}
+
+img = cv2.imread(os.path.join(img_dir, '49_right.jpg'))
+RIGHT49_DICT = {
+    'name': "right49",
+    'image': img,
+    'aperture_rad': 200 * np.pi/180,
+    'img_height': img.shape[:2][0],
+    'img_width': img.shape[:2][1],
+    'radius': 1070/2592 * img.shape[:2][1],     #330
+    'center_x': 1257/2592 * img.shape[:2][1],   #388
+    'center_y': 940/1920 * img.shape[:2][0],    #298
+    'a_up': 0,
+    'a_right': 0,
+}
+
+
 
 CANVAS_WIDTH = 1440
 CANVAS_HEIGHT = 1000
