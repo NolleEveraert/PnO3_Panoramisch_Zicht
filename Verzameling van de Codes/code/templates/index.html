@@ -1,10 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='style.css') }}">
+     <script src="{{url_for('static', filename='three.min.js')}}"></script>
+    <script src="{{url_for('static', filename='panolens.min.js')}}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <title>Live Streaming Demonstration</title>
+</head>
+
 <body>
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8  offset-lg-2">
-                <h3 class="mt-5">Live Streaming</h3>
-                <img src="{{ url_for('video_feed') }}" width="100%">
-            </div>
-        </div>
-    </div>
-    </body>
+  <script src="static\main.js"></script>
+ <img src="{{ url_for('video_feed') }}" width="0%" id="foto">
+</body>
+</html>
