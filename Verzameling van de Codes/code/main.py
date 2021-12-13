@@ -9,6 +9,7 @@ from threading import Thread
 
 from stream import Recorder, FrameBuffer, send, transform, receive, mergeFrames, RESOLUTION, FRAMERATE, stop, running
 from projection import getTransformMatrices
+# from server import app
 
 
 LEFT_DICT = {
@@ -85,8 +86,10 @@ def senderloop(camera, comm):
         
         
 def receiverloop(camera, comm):
-#     fourcc = cv.VideoWriter_fourcc(*'MJPG')
-#     out = cv.VideoWriter('output.avi', fourcc, 20.0, (RESOLUTION[0], RESOLUTION[1]), True)
+    # from server import app
+
+    fourcc = cv.VideoWriter_fourcc('M', 'J', 'P', 'G')
+    out = cv.VideoWriter('output.avi', fourcc, 20.0, (RESOLUTION[0], RESOLUTION[1]), True)
 
     matrixX, matrixY = getTransformMatrices(RIGHT_DICT['aperture_rad'], RIGHT_DICT['center_x'], RIGHT_DICT['center_y'], RIGHT_DICT['radius'])
 
@@ -102,6 +105,7 @@ def receiverloop(camera, comm):
 
     with Recorder(camera, record_buffer, comm) as recorder:
         camera.start_recording(recorder, 'bgr')
+        # app.run(debug=True)
     
         receive_thread = Thread(target=receive, args=(comm, receive_buffer, receive_times))
         transform_thread = Thread(target=transform, args=(record_buffer, transform_buffer, matrixX, matrixY, transform_times))
@@ -120,10 +124,14 @@ def receiverloop(camera, comm):
             
     #             cv.imshow('merged', frame)
     #             cv.waitKey(100)
+            
+            # out.write(frame)
+            cv.imshow('merged', frame)
             sleep(0.1)
             cv.imwrite(f'frames/frame{count}.jpg', frame)
 
         camera.stop_recording()
+        out.release()
 
         receive_thread.join()
         transform_thread.join()
