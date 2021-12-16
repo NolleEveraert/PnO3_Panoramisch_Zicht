@@ -19,7 +19,7 @@ class Record_video(PiRGBAnalysis):
 
     def analyze(self, array):
         self.frames.append(array)
-        #self.comm.Barrier()
+        self.comm.Barrier()
         self.frame_count += 1
         
     def get_frame(self):
@@ -34,13 +34,15 @@ def recorderloop(camera, comm):
     fourcc = cv.VideoWriter_fourcc(*'XVID')
     video = cv.VideoWriter('test.avi',fourcc, float(FRAMERATE), (RESOLUTION[0],RESOLUTION[1]))
     with Record_video(camera, comm) as recorder:
-        #comm.Barrier()
+        comm.Barrier()
         camera.start_recording(recorder, 'rgb')
         camera.wait_recording(20)
         while True:
             frame = recorder.get_frame()
             if frame is not None:
                 video.write(frame)
+            else:
+                break
              
         video.release()
             

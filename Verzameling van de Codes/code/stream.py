@@ -4,9 +4,8 @@ import cv2 as cv
 from time import sleep, time
 
 from projection import perform_transform, merge
+from config import FRAMERATE, RESOLUTION
 
-RESOLUTION =  (800, 608)#(1296,976)
-FRAMERATE = 5
 running = True
 
 
@@ -89,8 +88,6 @@ def transform(inputBuffer, outputBuffer, matrixX, matrixY, times):
 
         times.append(time() - start)
 
-    return times
-
 
 def receive(comm, buffer, times):
     global running
@@ -108,12 +105,13 @@ def receive(comm, buffer, times):
             print(f'receiver: {frames_received} received')
             frames_received += 1
         times.append(time() - start)
-    
-    return times
-        
+            
 
 def mergeFrames(buffer_in_1, buffer_in_2, buffer_out, times):
+    global running
+
     while running:
+        print('merging')
         count1, frame1 = buffer_in_1.get()
         count2, frame2 = buffer_in_2.get()
         
@@ -127,12 +125,12 @@ def mergeFrames(buffer_in_1, buffer_in_2, buffer_out, times):
                 print(f'frame {count2} DROPPED')
                 count2, frame2 = buffer_in_2.get()
 
+        if count1 is None or count2 is None:
+            continue
         merged = merge(frame1, frame2)
         buffer_out.push(count1, merged)
         print(f'MERGED {count1}')
         times.append(time() - start)
-
-    return times
 
 
 def stop():

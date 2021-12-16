@@ -9,34 +9,21 @@ from threading import Thread
 from stream import Recorder, FrameBuffer, send, transform, receive, mergeFrames, RESOLUTION, FRAMERATE, stop, running
 from webstream import start_server
 from projection import getTransformMatrices
-
-
-DURATION = 60
-
-LEFT_DICT = {
-    'aperture_rad': 195 * np.pi/180,
-    'radius': 1070/2592 * RESOLUTION[0],
-    'center_x': 1160/2592 * RESOLUTION[0],
-    'center_y': 957/1920 * RESOLUTION[1],
-}
-
-RIGHT_DICT = {
-    'aperture_rad': 197 * np.pi/180,
-    'radius': 1070/2592 * RESOLUTION[0],
-    'center_x': 1257/2592 * RESOLUTION[0],
-    'center_y': 940/1920 * RESOLUTION[1],
-}
+from config import DURATION, LEFT_DICT, RIGHT_DICT, CANVAS_WIDTH, CANVAS_HEIGHT
 
 
 def write_times(time_list):
     res = f'{RESOLUTION[0]}x{RESOLUTION[1]}'
-    with open(f'tijden/{FRAMERATE}-{res}.txt', 'w') as f:
+    canvas = f'{CANVAS_WIDTH}x{CANVAS_HEIGHT}'
+    with open(f'tijden/{FRAMERATE}-{res}-{canvas}.txt', 'w') as f:
         f.write(f'FPS: {FRAMERATE}\n')
-        f.write(f'RESOLUTIE: {res}\n\n')
+        f.write(f'CAMERA RESOLUTIE: {res}\n')
+        f.write(f'CANVAS RESOLUTIE: {canvas}')
+        f.write(f'DUUR: {DURATION}s\n\n')
         for name, times in time_list:
             f.write(name)
             f.write('\n')
-            f.write('\t'.join([str(time) for time in times]))
+            f.write(','.join([str(time) for time in times]))
             f.write('\n\n')
 
 
@@ -44,7 +31,7 @@ def write_times(time_list):
 def senderloop(camera, comm):
     global running # TODO: nog nodig?
 
-    matrixX, matrixY = getTransformMatrices(LEFT_DICT['aperture_rad'], LEFT_DICT['center_x'], LEFT_DICT['center_y'], LEFT_DICT['radius'])
+    matrixX, matrixY = getTransformMatrices(LEFT_DICT['aperture_rad'], LEFT_DICT['center_x'], LEFT_DICT['center_y'], LEFT_DICT['radius'], a_right=LEFT_DICT['a_right_rad'], a_up=LEFT_DICT['a_up_rad'])
 
     record_buffer = FrameBuffer()
     transform_buffer = FrameBuffer()
@@ -71,7 +58,7 @@ def senderloop(camera, comm):
         
 def receiverloop(camera, comm):
 
-    matrixX, matrixY = getTransformMatrices(RIGHT_DICT['aperture_rad'], RIGHT_DICT['center_x'], RIGHT_DICT['center_y'], RIGHT_DICT['radius'])
+    matrixX, matrixY = getTransformMatrices(RIGHT_DICT['aperture_rad'], RIGHT_DICT['center_x'], RIGHT_DICT['center_y'], RIGHT_DICT['radius'], a_right=RIGHT_DICT['a_right_rad'], a_up=RIGHT_DICT['a_up_rad'])
 
 
     record_buffer = FrameBuffer()
