@@ -8,24 +8,6 @@ from threading import Thread
 from time import time, sleep
 
 
-class FrameBuffer:
-    def __init__(self, size=10):
-        self.size = 10
-        self.frames = []
-        
-    def push(self, count, frame):
-        self.frames.append((count, frame))
-        if len(self.frames) > self.size:
-            self.frames.pop(0)
-    
-    def get(self):
-        global running
-        while len(self.frames) == 0:
-            sleep(0.01)
-
-        return self.frames.pop(0)
-
-
 class StreamingHandler(server.BaseHTTPRequestHandler):
     buffer = None
     def do_GET(self):
@@ -111,10 +93,3 @@ def fill_buffer(buffer):
         buffer.push(1, np.ones((100, 100, 3), dtype=np.uint8) * 255 * (time()%1))
         sleep(0.1)
 
-
-if __name__ == '__main__':
-    b = FrameBuffer()
-    t = Thread(target=fill_buffer, args=(b,))
-    t.start()
-    start_server(('', 8000), b)
-    t.join()

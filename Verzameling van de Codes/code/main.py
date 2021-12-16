@@ -7,18 +7,21 @@ from time import time, sleep
 from threading import Thread
 
 from stream import Recorder, FrameBuffer, send, transform, receive, mergeFrames, RESOLUTION, FRAMERATE, stop, running
+from webstream import start_server
 from projection import getTransformMatrices
 
 
+DURATION = 60
+
 LEFT_DICT = {
-    'aperture_rad': 198 * np.pi/180,
+    'aperture_rad': 195 * np.pi/180,
     'radius': 1070/2592 * RESOLUTION[0],
     'center_x': 1160/2592 * RESOLUTION[0],
     'center_y': 957/1920 * RESOLUTION[1],
 }
 
 RIGHT_DICT = {
-    'aperture_rad': 198 * np.pi/180,
+    'aperture_rad': 197 * np.pi/180,
     'radius': 1070/2592 * RESOLUTION[0],
     'center_x': 1257/2592 * RESOLUTION[0],
     'center_y': 940/1920 * RESOLUTION[1],
@@ -57,7 +60,7 @@ def senderloop(camera, comm):
         transform_thread.start()
         send_thread.start()
 
-        sleep(10)
+        sleep(DURATION)
         stop()
 
         camera.stop_recording()
@@ -67,9 +70,6 @@ def senderloop(camera, comm):
         
         
 def receiverloop(camera, comm):
-
-    # fourcc = cv.VideoWriter_fourcc('M', 'J', 'P', 'G')
-    # out = cv.VideoWriter('output.avi', fourcc, 20.0, (RESOLUTION[0], RESOLUTION[1]), True)
 
     matrixX, matrixY = getTransformMatrices(RIGHT_DICT['aperture_rad'], RIGHT_DICT['center_x'], RIGHT_DICT['center_y'], RIGHT_DICT['radius'])
 
@@ -89,22 +89,14 @@ def receiverloop(camera, comm):
         receive_thread = Thread(target=receive, args=(comm, receive_buffer, receive_times))
         transform_thread = Thread(target=transform, args=(record_buffer, transform_buffer, matrixX, matrixY, transform_times))
         merge_thread = Thread(target=mergeFrames, args=(transform_buffer, receive_buffer, merge_buffer, merge_times))
+        server_thread = Thread(target=start_server, args=(('', 8000), merge_buffer))
         receive_thread.start()
         transform_thread.start()
         merge_thread.start()
+        server_thread.start()
 
-        while running:
-            count, frame = merge_buffer.get()
-            if count == None:
-                break
-            
-            # out.write(frame)
-            # cv.imshow('merged', frame)
-            sleep(0.1)
-            # cv.imwrite(f'frames/frame{count}.jpg', frame)
-
+        sleep(DURATION)
         camera.stop_recording()
-        # out.release()
 
         receive_thread.join()
         transform_thread.join()
