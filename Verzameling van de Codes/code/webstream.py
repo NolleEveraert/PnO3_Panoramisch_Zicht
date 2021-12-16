@@ -109,7 +109,7 @@ def start_server(address, buffer):
 def fill_buffer(buffer):
     while True:
         buffer.push(1, np.ones((100, 100, 3), dtype=np.uint8) * 255 * (time()%1))
-        sleep(0.05)
+        sleep(0.1)
 
 
 if __name__ == '__main__':
