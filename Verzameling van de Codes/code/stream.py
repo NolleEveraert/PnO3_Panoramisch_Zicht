@@ -98,7 +98,7 @@ def receive(comm, buffer, times):
         count, frame = comm.recv(source=1, tag=frames_received) # Als de streamer rank 1 heeft
         if count == 0:
             print('stop code ontvangen')
-            running = False
+            stop()
             break
         else:
             buffer.push(count, frame)
@@ -111,9 +111,11 @@ def mergeFrames(buffer_in_1, buffer_in_2, buffer_out, times):
     global running
 
     while running:
-        print('merging')
         count1, frame1 = buffer_in_1.get()
         count2, frame2 = buffer_in_2.get()
+
+        if count1 is None or count2 is None:
+            continue
         
         start = time()
         while count1 != count2:
@@ -124,9 +126,7 @@ def mergeFrames(buffer_in_1, buffer_in_2, buffer_out, times):
             else:
                 print(f'frame {count2} DROPPED')
                 count2, frame2 = buffer_in_2.get()
-
-        if count1 is None or count2 is None:
-            continue
+        
         merged = merge(frame1, frame2)
         buffer_out.push(count1, merged)
         print(f'MERGED {count1}')

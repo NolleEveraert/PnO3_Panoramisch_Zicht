@@ -6,7 +6,7 @@ import cv2 as cv
 from time import time, sleep
 from threading import Thread
 
-from stream import Recorder, FrameBuffer, send, transform, receive, mergeFrames, RESOLUTION, FRAMERATE, stop, running
+from stream import Recorder, FrameBuffer, send, transform, receive, mergeFrames, RESOLUTION, FRAMERATE, stop
 from webstream import start_server
 from projection import getTransformMatrices
 from config import DURATION, LEFT_DICT, RIGHT_DICT, CANVAS_WIDTH, CANVAS_HEIGHT
@@ -18,19 +18,18 @@ def write_times(time_list):
     with open(f'tijden/{FRAMERATE}-{res}-{canvas}.txt', 'w') as f:
         f.write(f'FPS: {FRAMERATE}\n')
         f.write(f'CAMERA RESOLUTIE: {res}\n')
-        f.write(f'CANVAS RESOLUTIE: {canvas}')
+        f.write(f'CANVAS RESOLUTIE: {canvas}\n')
         f.write(f'DUUR: {DURATION}s\n\n')
         for name, times in time_list:
             f.write(name)
             f.write('\n')
+            f.write(f'{sum(times)/len(times)}\n')
             f.write(','.join([str(time) for time in times]))
             f.write('\n\n')
 
 
 
 def senderloop(camera, comm):
-    global running # TODO: nog nodig?
-
     matrixX, matrixY = getTransformMatrices(LEFT_DICT['aperture_rad'], LEFT_DICT['center_x'], LEFT_DICT['center_y'], LEFT_DICT['radius'], a_right=LEFT_DICT['a_right_rad'], a_up=LEFT_DICT['a_up_rad'])
 
     record_buffer = FrameBuffer()
@@ -82,13 +81,15 @@ def receiverloop(camera, comm):
         merge_thread.start()
         server_thread.start()
 
-        sleep(DURATION)
-        camera.stop_recording()
+        #sleep(DURATION)
+        
 
         receive_thread.join()
         transform_thread.join()
         merge_thread.join()
         write_times([('receive', receive_times), ('transform', transform_times), ('merge', merge_times)])
+
+        camera.stop_recording()
 
 
 def main():

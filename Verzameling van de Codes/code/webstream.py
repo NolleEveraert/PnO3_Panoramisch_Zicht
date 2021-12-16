@@ -86,10 +86,3 @@ def start_server(address, buffer):
     StreamingHandler.buffer = buffer
     server = StreamingServer(address, StreamingHandler)
     server.serve_forever()
-    
-
-def fill_buffer(buffer):
-    while True:
-        buffer.push(1, np.ones((100, 100, 3), dtype=np.uint8) * 255 * (time()%1))
-        sleep(0.1)
-
