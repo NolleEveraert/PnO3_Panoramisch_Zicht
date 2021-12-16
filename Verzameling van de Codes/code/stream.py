@@ -1,140 +1,138 @@
 from picamera.array import PiRGBAnalysis
 import numpy as np
 import cv2 as cv
-import io
-from time import sleep
-from threading import Thread
+from time import sleep, time
 
-from projection import getTransformMatrices, perform_transform
+from projection import perform_transform, merge
+from config import FRAMERATE, RESOLUTION
 
-RESOLUTION =  (800,608)#(1296,976)
-FRAMERATE = 60
-
-LEFT_DICT = {
-    'aperture_rad': 198 * np.pi/180,
-    'radius': 1070/2592 * RESOLUTION[0],
-    'center_x': 1160/2592 * RESOLUTION[0],
-    'center_y': 957/1920 * RESOLUTION[1],
-}
-
-RIGHT_DICT = {
-    'aperture_rad': 198 * np.pi/180,
-    'radius': 1070/2592 * RESOLUTION[0],
-    'center_x': 1257/2592 * RESOLUTION[0],
-    'center_y': 940/1920 * RESOLUTION[1],
-}
-
-matrixLeftx, matrixLefty = getTransformMatrices(LEFT_DICT['aperture_rad'], LEFT_DICT['center_x'], LEFT_DICT['center_y'], LEFT_DICT['radius'])
-matrixRightx, matrixRighty = getTransformMatrices(RIGHT_DICT['aperture_rad'], RIGHT_DICT['center_x'], RIGHT_DICT['center_y'], RIGHT_DICT['radius'])
+running = True
 
 
-class StreamSender2(PiRGBAnalysis):
-    def __init__(self, camera, comm):
-        super().__init__(camera)
+# def loop(f, *args, **kwargs):
+#     times = []
+#     while running:
+#         start = time()
+#         f(args, kwargs)
+#         times.append(time() - start)
+
+#     return times
+
+
+
+class FrameBuffer:
+    def __init__(self, size=10):
+        self.size = size
         self.frames = []
+        
+    def push(self, count, frame):
+        self.frames.append((count, frame))
+        if len(self.frames) > self.size:
+            self.frames.pop(0)
+    
+    def get(self):
+        global running
+        while len(self.frames) == 0:
+            if not running:
+                return None, None
+            sleep(0.01)
+
+        return self.frames.pop(0)
+
+
+class Recorder(PiRGBAnalysis):
+    def __init__(self, camera, buffer, comm):
+        super().__init__(camera)
+        self.buffer = buffer
         self.frame_count = 1
-        self.frames_sent = 1
         self.comm = comm
+        self.rank = comm.Get_rank()
 
     def analyze(self, array):
-        self.frames.append(array)
-        print(f'sender: {self.frame_count} taken')
+        self.buffer.push(self.frame_count, array)
+        print(f'{self.rank}: {self.frame_count} taken')
         self.comm.Barrier()
         self.frame_count += 1
         
-
-    def send(self):
-        if len(self.frames) > 0:
-            data = self.frames.pop(0)
-            data = perform_transform(data, matrixRightx, matrixRighty)
-            self.comm.send(data, dest=0, tag=self.frames_sent)
-            self.frames_sent +=1
-        return None
-
-class StreamSender(object):
-    def __init__(self, comm):
-        self.comm = comm
-        self.stream = io.BytesIO()
-        self.frame = 1
-        self.frames_sent = 1
-        self.frames = {}
         
-    def write(self, data):
-        if data.startswith(b'\xff\xd8'):
-            # byte code voor een nieuwe frame => stuur inhoud van buffer door met MPI 
-            size = self.stream.tell()
-            if size > 0:
-                self.stream.seek(0)
-                self.frames[self.frame] = self.stream.read(size)
-                print(f'sender: {self.frame} taken')
-                self.frame += 1
-                self.stream.seek(0)
-                self.comm.Barrier()
-        self.stream.write(data)
+def send(comm, buffer, times):
+    global running
+    print('started sending')
+    frames_sent = 1
+    while running:
+        count, frame = buffer.get()
+
+        start = time()
+        if count != None:
+            comm.send((count, frame), dest=0, tag=frames_sent)
+            print(f'sent {count}')
+            frames_sent += 1
         
-    def send(self):
-        try:
-            self.comm.send(self.frames.pop(self.frames_sent), dest=0, tag=self.frames_sent)
-            print(f'sender: {self.frames_sent} sent')
-            self.frames_sent += 1
-        except KeyError:
-            return
+        times.append(time() - start)
 
-    def flush(self):
-        print('flush')
-        self.comm.send(b'10', dest=0, tag=self.frame)
-        sleep(1)
-        self.comm.Barrier()
-        print('flushed')
-
-
-class StreamRecorder(PiRGBAnalysis):
-    def __init__(self, camera, comm):
-        super().__init__(camera)
-        self.frames = []
-        self.frame_count = 1
-        self.comm = comm
-
-    def analyze(self, array):
-        self.frames.append(array)
-        print(f'receiver: {self.frame_count} taken')
-        self.comm.Barrier()
-        self.frame_count += 1
+    comm.send((0, np.empty((1,1))), dest=0, tag=frames_sent)
         
+        
+def transform(inputBuffer, outputBuffer, matrixX, matrixY, times):
+    global running
 
-    def get_frame(self):
-        if len(self.frames) > 0:
-            frame = self.frames.pop(0)
-            frame = perform_transform(frame, matrixLeftx, matrixLefty)
-            return frame
-        return None
+    print('started transforming')
+    while running:
+        count, frame = inputBuffer.get()
+        
+        start = time()
+        if count != None:
+            transformed = perform_transform(frame, matrixX, matrixY)
+            outputBuffer.push(count, transformed)
+            print(f'transformed {count}')
+
+        times.append(time() - start)
 
 
-class Receiver:
-    def __init__(self, comm):
-        self.comm = comm
-        self.frame = 1
-
-    def read(self):
-        #data = np.empty((RESOLUTION[1], RESOLUTION[0], 3))
-        data = self.comm.recv(source=1, tag=self.frame) # Als de streamer rank 1 heeft
-        if data == b'10':
+def receive(comm, buffer, times):
+    global running
+    
+    frames_received = 1
+    while running:
+        start = time()
+        count, frame = comm.recv(source=1, tag=frames_received) # Als de streamer rank 1 heeft
+        if count == 0:
             print('stop code ontvangen')
-            return
+            stop()
+            break
         else:
-            print(f'receiver: {self.frame} received')
-            #image = np.empty((RESOLUTION[1], RESOLUTION[0], 3))
-#             t = Thread(target=decode, args=(data, image, self.frame))
-#             t.start()
-#             t.join()
-            self.frame += 1
-            return data
+            buffer.push(count, frame)
+            print(f'receiver: {frames_received} received')
+            frames_received += 1
+        times.append(time() - start)
+            
+
+def mergeFrames(buffer_in_1, buffer_in_2, buffer_out, times):
+    global running
+
+    while running:
+        count1, frame1 = buffer_in_1.get()
+        count2, frame2 = buffer_in_2.get()
+
+        if count1 is None or count2 is None:
+            continue
         
+        start = time()
+        while count1 != count2:
+            print(count1, count2)
+            if count1 < count2:
+                print(f'frame {count1} DROPPED')
+                count1, frame1 = buffer_in_1.get()
+            else:
+                print(f'frame {count2} DROPPED')
+                count2, frame2 = buffer_in_2.get()
         
-def decode(data, image, frame):
-    inp = np.frombuffer(data, np.uint8)
-    image = cv.imdecode(inp, cv.IMREAD_COLOR)
-    perform_transform(image, matrixLeftx, matrixLefty)
-    
-    print(f'decoded: {frame}')
-    
+        merged = merge(frame1, frame2)
+        buffer_out.push(count1, merged)
+        print(f'MERGED {count1}')
+        times.append(time() - start)
+
+
+def stop():
+    global running
+    running = False

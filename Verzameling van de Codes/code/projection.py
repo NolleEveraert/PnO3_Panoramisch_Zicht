@@ -1,10 +1,6 @@
 import numpy as np
 import cv2
 import time
-import os
-
-
-img_dir = r'Verzameling van de Codes\Projections'
 
 
 # img = cv2.imread(r'Verzameling van de Codes\Projections\fisheye-210.jpg')
@@ -19,95 +15,63 @@ img_dir = r'Verzameling van de Codes\Projections'
 #     'output_path': r'Verzameling van de Codes\Projections\fisheye-output.jpg',
 # }
 
-img = cv2.imread(os.path.join(img_dir, 'comp-left.jpg'))
-COMPLEFT_DICT = {
-    'name': "comp-left",
-    'image': img,
-    'aperture_rad': 200 * np.pi/180,
-    'img_height': img.shape[:2][0],     #2592
-    'img_width': img.shape[:2][1],      #1920
-    'radius': 1070,       # mistakes in radius do not matter, as long as radius/aperture is right
-    'center_x': 1150,
-    'center_y': 970,
-    'output_path': os.path.join(img_dir, 'comp-left-output.jpg'),
-}
+# img = cv2.imread(r'Verzameling van de Codes\Projections\comp-left.jpg')
+# COMPLEFT_DICT = {
+#     'name': "comp-left",
+#     'image': img,
+#     'aperture_rad': 200 * np.pi/180,
+#     'img_height': img.shape[:2][0],
+#     'img_width': img.shape[:2][1],
+#     'radius': 1070,       # mistakes in radius do not matter, as long as radius/aperture is right
+#     'center_x': 1150,
+#     'center_y': 970,
+#     'output_path': r'Verzameling van de Codes\Projections\comp-left-output.jpg',
+# }
+# 
+# img = cv2.imread(r'Verzameling van de Codes\Projections\comp-right.jpg')
+# COMPRIGHT_DICT = {
+#     'name': "comp-right",
+#     'image': img,
+#     'aperture_rad': 200 * np.pi/180,
+#     'img_height': img.shape[:2][0],
+#     'img_width': img.shape[:2][1],
+#     'radius': 1070,     #1078
+#     'center_x': 1256,
+#     'center_y': 970,
+#     'output_path': r'Verzameling van de Codes\Projections\comp-right-output.jpg',
+# }
+# 
+# img = cv2.imread(r'Verzameling van de Codes\Projections\gang_left.jpg')
+# GANGLEFT_DICT = {
+#     'name': "gang-left",
+#     'image': img,
+#     'aperture_rad': 200 * np.pi/180,
+#     'img_height': img.shape[:2][0],
+#     'img_width': img.shape[:2][1],
+#     'radius': 1070,     #1078
+#     'center_x': 1160,
+#     'center_y': 957,
+#     'a_up': 0,
+#     'a_right': 0,
+#     'output_path': r'Verzameling van de Codes\Projections\gang-left-output.jpg',
+# }
+# 
+# img = cv2.imread(r'Verzameling van de Codes\Projections\gang_right.jpg')
+# GANGRIGHT_DICT = {
+#     'name': "gang-right",
+#     'image': img,
+#     'aperture_rad': 200 * np.pi/180,
+#     'img_height': img.shape[:2][0],
+#     'img_width': img.shape[:2][1],
+#     'radius': 1070,     #1078
+#     'center_x': 1257,
+#     'center_y': 940,
+#     'a_up': 0,
+#     'a_right': 0,
+#     'output_path': r'Verzameling van de Codes\Projections\gang-right-output.jpg',
+# }
 
-img = cv2.imread(os.path.join(img_dir, 'comp-right.jpg'))
-COMPRIGHT_DICT = {
-    'name': "comp-right",
-    'image': img,
-    'aperture_rad': 200 * np.pi/180,
-    'img_height': img.shape[:2][0],
-    'img_width': img.shape[:2][1],
-    'radius': 1070,     #1078
-    'center_x': 1256,
-    'center_y': 970,
-    'output_path': os.path.join(img_dir, 'comp-right-output.jpg'),
-}
-
-img = cv2.imread(os.path.join(img_dir, 'gang_left.jpg'))
-GANGLEFT_DICT = {
-    'name': "gang-left",
-    'image': img,
-    'aperture_rad': 200 * np.pi/180,
-    'img_height': img.shape[:2][0],
-    'img_width': img.shape[:2][1],
-    'radius': 1070,     #1078
-    'center_x': 1160,
-    'center_y': 957,
-    'a_up': 0,
-    'a_right': 0,
-    'output_path': os.path.join(img_dir, 'gang-left-output.jpg'),
-}
-
-img = cv2.imread(os.path.join(img_dir, 'gang_right.jpg'))
-GANGRIGHT_DICT = {
-    'name': "gang-right",
-    'image': img,
-    'aperture_rad': 200 * np.pi/180,
-    'img_height': img.shape[:2][0],
-    'img_width': img.shape[:2][1],
-    'radius': 1070,     #1078
-    'center_x': 1257,
-    'center_y': 940,
-    'a_up': 0,
-    'a_right': 0,
-    'output_path': os.path.join(img_dir, 'gang-right-output.jpg'),
-}
-
-img = cv2.imread(os.path.join(img_dir, '49_left.png'))
-LEFT49_DICT = {
-    'name': "left49",
-    'image': img,
-    'aperture_rad': 200 * np.pi/180,
-    'img_height': img.shape[:2][0],
-    'img_width': img.shape[:2][1],
-    'radius': 1070/2592 * img.shape[:2][1],     #330
-    'center_x': 1160/2592 * img.shape[:2][1],   #358
-    'center_y': 957/1920 * img.shape[:2][0],    #303
-    'a_up': 0,
-    'a_right': 0,
-}
-
-img = cv2.imread(os.path.join(img_dir, '49_right.jpg'))
-RIGHT49_DICT = {
-    'name': "right49",
-    'image': img,
-    'aperture_rad': 200 * np.pi/180,
-    'img_height': img.shape[:2][0],
-    'img_width': img.shape[:2][1],
-    'radius': 1070/2592 * img.shape[:2][1],     #330
-    'center_x': 1257/2592 * img.shape[:2][1],   #388
-    'center_y': 940/1920 * img.shape[:2][0],    #298
-    'a_up': 0,
-    'a_right': 0,
-}
-
-
-
-CANVAS_WIDTH = 1440
-CANVAS_HEIGHT = 1000
-MARGIN = 0.03       # het percentage van de breedte dat als marge wordt genomen
+from config import CANVAS_HEIGHT, CANVAS_WIDTH, MARGIN     # het percentage van de breedte dat als marge wordt genomen
 #0.015
 
 
@@ -163,13 +127,7 @@ def getMargins(img):
 def norm_correlation(a, b):
     # the higher, the better
     assert a.shape == b.shape
-    if not a.dtype == b.dtype == np.uint8:
-        print("WARNING: one array does not have type np.uint8")
-    
-    c = a.astype(np.uint64)
-    d = b.astype(np.uint64)
-    return np.sum(c*d) / (np.sqrt(np.sum(c*c)) * np.sqrt(np.sum(d*d)))
-
+    return np.sum(a*b) / (np.sqrt(np.sum(a*a)) * np.sqrt(np.sum(b*b)))
 
 def compare(img_dict1, img_dict2, ap1, ap2) -> int:
     ap1_rad = ap1 * np.pi/180
@@ -233,8 +191,9 @@ def merge(left, right):
         margin0_interpolated,
     ))
     #return np.roll(result, shift=int(margin_width/2), axis=1)
-    return result       # rollen neemt veel tijd en is niet nodig
+    return np.roll(result, shift=-int(margin_width/2), axis=1)
     
+
 
 def main():
     for aperture in range(180, 202, 2):
