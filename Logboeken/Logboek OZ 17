@@ -5,5 +5,5 @@ Nolle: Werken eindverslag + presentatie
 Joppe: Opzoekwerk gedaan naar de cardboard vr-brillen
 Jonas: Nieuwe testafbeelding genomen en cameraparameters geoptimaliseerd, gezocht naar manieren om panorama afbeeldingen real-time te displayen.
 Thomas: Aan verslag gewerkt en geholpen met finalisatie werking project (en vaccin moeten laten zetten)
-Simon:
-Robin:
+Simon: webserver proberen te maken mbv Flask. Flask werkte echter niet goed samen met MPI
+Robin: webserver proberen te maken mbv Flask. Flask werkte echter niet goed samen met MPI
