@@ -71,9 +71,7 @@ import time
 #     'output_path': r'Verzameling van de Codes\Projections\gang-right-output.jpg',
 # }
 
-CANVAS_WIDTH = 720#1440
-CANVAS_HEIGHT = 500#1000
-MARGIN = 0.03       # het percentage van de breedte dat als marge wordt genomen
+from config import CANVAS_HEIGHT, CANVAS_WIDTH, MARGIN     # het percentage van de breedte dat als marge wordt genomen
 #0.015
 
 
