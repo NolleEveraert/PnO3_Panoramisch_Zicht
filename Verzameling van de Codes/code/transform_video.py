@@ -57,9 +57,4 @@ def main():
     cap2.release()
 
 if __name__ == '__main__':
-
-
     main()
-    
-
-
